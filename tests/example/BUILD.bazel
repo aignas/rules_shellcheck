@@ -1,0 +1,17 @@
+load("//:def.bzl", "shellcheck", "shellcheck_test")
+
+shellcheck(name = "shellcheck")
+
+shellcheck_test(
+    name = "shellcheck_all",
+    data = glob(["src/**/*.sh"]),
+    tags = ["lint"],
+)
+
+test_suite(
+    name = "verify-all",
+    tags = ["lint"],
+    tests = [
+        ":shellcheck_all",
+    ],
+)

@@ -34,16 +34,6 @@ http_archive(
 )
 
 http_archive(
-    name = "shellcheck",
-    build_file_content = """
-exports_files(["shellcheck"])
-    """,
-    sha256 = "64f17152d96d7ec261ad3086ed42d18232fcb65148b44571b564d688269d36c8",
-    strip_prefix = "shellcheck-v0.7.1",
-    urls = ["https://github.com/koalaman/shellcheck/releases/download/v0.7.1/shellcheck-v0.7.1.linux.x86_64.tar.xz"],
-)
-
-http_archive(
     name = "bazel_skylib",
     sha256 = "97e70364e9249702246c0e9444bccdc4b847bed1eb03c5a3ece4f83dfe6abc44",
     urls = [
@@ -51,3 +41,7 @@ http_archive(
         "https://github.com/bazelbuild/bazel-skylib/releases/download/1.0.2/bazel-skylib-1.0.2.tar.gz",
     ],
 )
+
+load("//:deps.bzl", "shellcheck_dependencies")
+
+shellcheck_dependencies()
