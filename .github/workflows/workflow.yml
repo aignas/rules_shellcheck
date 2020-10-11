@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Mount bazel cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/bazel
+          key: bazel-${{ hashFiles('.bazelversion') }}
+
+      - name: Mount tools
+        uses: actions/cache@v2
+        with:
+          path: |
+            tools/bin/
+          key: ${{ runner.os }}-tools-${{ hashFiles('tools/scripts/bootstrap.sh') }}
+
+      - name: Bootstrap
+        run: ./tools/scripts/bootstrap.sh
+
+      - name: Build/Test
+        run: ./tools/ci/ci-test.sh
