@@ -1,0 +1,5 @@
+/bazel-*
+/tools/bin/
+/tools/.crates.toml
+/tools/.crates2.json
+/cargo/target
