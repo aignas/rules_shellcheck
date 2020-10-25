@@ -1,0 +1,6 @@
+test --test_output=errors
+
+# Fix the excessive rebuilding when using anything that depends on protobuf rules
+# See https://github.com/bazelbuild/buildtools/issues/744
+build --incompatible_strict_action_env
+run --incompatible_strict_action_env
