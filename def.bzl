@@ -1,7 +1,7 @@
 def _impl(ctx):
-    ctx.actions.write(
+    ctx.actions.symlink(
         output = ctx.outputs.executable,
-        content = ctx.file._shellcheck.short_path,
+        target_file = ctx.file._shellcheck,
     )
     return [
         DefaultInfo(
