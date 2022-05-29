@@ -4,10 +4,10 @@ buildifier(name = "buildifier")
 
 alias(
     name = "shellcheck",
-    visibility = ["//visibility:public"],
     actual = select({
         "@bazel_tools//src/conditions:linux_x86_64": "@shellcheck_linux_amd64//:shellcheck",
         "@bazel_tools//src/conditions:linux_aarch64": "@shellcheck_linux_aarch64//:shellcheck",
         "@bazel_tools//src/conditions:darwin": "@shellcheck_darwin//:shellcheck",
     }),
+    visibility = ["//visibility:public"],
 )
