@@ -21,7 +21,7 @@ shellcheck_dependencies()
 
 Then `shellcheck` can be accessed by running:
 ```
-$ bazel run @rules_shellcheck//:shellcheck -- <parameters>
+$ bazel run @com_github_aignas_rules_shellcheck//:shellcheck -- <parameters>
 ```
 
 And you can define a lint target:
