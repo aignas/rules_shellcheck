@@ -1,13 +1,16 @@
 def _shellcheck_dependencies_impl(repository_ctx):
-    version = "v0.7.1"
-
-    arch = "linux.x86_64"
-    sha256 = "64f17152d96d7ec261ad3086ed42d18232fcb65148b44571b564d688269d36c8"
+    version = "v0.8.0"
 
     os_name = repository_ctx.os.name.lower()
     if os_name.startswith("mac os"):
         arch = "darwin.x86_64"
-        sha256 = "b080c3b659f7286e27004aa33759664d91e15ef2498ac709a452445d47e3ac23"
+        sha256 = "e065d4afb2620cc8c1d420a9b3e6243c84ff1a693c1ff0e38f279c8f31e86634"
+    elif getattr(repository_ctx.os, "arch", None) == "aarch64":
+        arch = "linux.aarch64"
+        sha256 = "9f47bbff5624babfa712eb9d64ece14c6c46327122d0c54983f627ae3a30a4ac"
+    else:
+        arch = "linux.x86_64"
+        sha256 = "ab6ee1b178f014d1b86d1e24da20d1139656c8b0ed34d2867fbb834dad02bf0a"
 
     url = "https://github.com/koalaman/shellcheck/releases/download/{version}/shellcheck-{version}.{arch}.tar.xz".format(
         version = version,
