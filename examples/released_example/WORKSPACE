@@ -1,0 +1,12 @@
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "com_github_aignas_rules_shellcheck",
+    sha256 = "180325028cddda58df209765947839e78e75a0cf90b2dc6303bdf7a90c735e0c",
+    strip_prefix = "rules_shellcheck-0.1.0",
+    url = "https://github.com/aignas/rules_shellcheck/archive/refs/tags/v0.1.0.tar.gz",
+)
+
+load("@com_github_aignas_rules_shellcheck//:deps.bzl", "shellcheck_dependencies")
+
+shellcheck_dependencies()
