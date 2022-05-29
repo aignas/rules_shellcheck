@@ -16,10 +16,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Build/Test
-        run: |
-          # Test fetching all of the dependencies for all platforms
-          bazel fetch //...
+      - name: Test fetch
+        if: ${{ matrix.os }} == 'ubuntu-latest'
+        run: bazel fetch //...
 
-          # Test the examples
-          bazel test //...
+      - name: Test
+        run: bazel test //...
