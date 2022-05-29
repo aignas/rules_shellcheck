@@ -19,14 +19,9 @@ load("@com_github_aignas_rules_shellcheck//:deps.bzl", "shellcheck_dependencies"
 shellcheck_dependencies()
 ```
 
-Then you can have a `bazel` target to access the `shellcheck` binary:
-```
-shellcheck(name = "shellcheck")
-```
-
 Then `shellcheck` can be accessed by running:
 ```
-$ bazel run //:shellcheck -- <parameters>
+$ bazel run @rules_shellcheck//:shellcheck -- <parameters>
 ```
 
 And you can define a lint target:

@@ -1,15 +1,3 @@
-def _impl(ctx):
-    ctx.actions.write(
-        output = ctx.outputs.executable,
-        content = ctx.file._shellcheck.short_path,
-    )
-    return [
-        DefaultInfo(
-            executable = ctx.outputs.executable,
-            runfiles = ctx.runfiles(files = [ctx.file._shellcheck]),
-        ),
-    ]
-
 def _impl_test(ctx):
     files = [ctx.file._shellcheck] + ctx.files.data
     script = "exec " + " ".join([f.short_path for f in files])
@@ -26,19 +14,6 @@ def _impl_test(ctx):
         ),
     ]
 
-shellcheck = rule(
-    implementation = _impl,
-    attrs = {
-        "_shellcheck": attr.label(
-            default = Label("@shellcheck"),
-            allow_single_file = True,
-            cfg = "host",
-            executable = True,
-        ),
-    },
-    executable = True,
-)
-
 shellcheck_test = rule(
     implementation = _impl_test,
     attrs = {
@@ -46,7 +21,7 @@ shellcheck_test = rule(
             allow_files = True,
         ),
         "_shellcheck": attr.label(
-            default = Label("@shellcheck"),
+            default = Label("//:shellcheck"),
             allow_single_file = True,
             cfg = "host",
             executable = True,
