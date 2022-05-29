@@ -5,10 +5,21 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v3
 
       - name: Build/Test
-        run: bazel test ...
+        run: |
+          # Test fetching all of the dependencies for all platforms
+          bazel fetch //...
+
+          # Test the examples
+          bazel test //...

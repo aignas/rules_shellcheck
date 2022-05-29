@@ -6,8 +6,10 @@ alias(
     name = "shellcheck",
     actual = select({
         "@bazel_tools//src/conditions:linux_x86_64": "@shellcheck_linux_amd64//:shellcheck",
-        "@bazel_tools//src/conditions:linux_aarch64": "@shellcheck_linux_aarch64//:shellcheck",
-        "@bazel_tools//src/conditions:darwin": "@shellcheck_darwin//:shellcheck",
+        "@bazel_tools//src/conditions:linux_aarch64": "@shellcheck_linux_arm64//:shellcheck",
+        "@bazel_tools//src/conditions:darwin": "@shellcheck_darwin_amd64//:shellcheck",
+        #"@bazel_tools//src/conditions:darwin_arm64": "@shellcheck_darwin_arm64//:shellcheck",
+        #"@bazel_tools//src/conditions:windows_x64": "@shellcheck_windows_amd64//:shellcheck",
     }),
     visibility = ["//visibility:public"],
 )
