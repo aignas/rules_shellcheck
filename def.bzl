@@ -30,7 +30,7 @@ shellcheck = rule(
     implementation = _impl,
     attrs = {
         "_shellcheck": attr.label(
-            default = Label("@shellcheck"),
+            default = Label("//:shellcheck"),
             allow_single_file = True,
             cfg = "host",
             executable = True,
@@ -46,7 +46,7 @@ shellcheck_test = rule(
             allow_files = True,
         ),
         "_shellcheck": attr.label(
-            default = Label("@shellcheck"),
+            default = Label("//:shellcheck"),
             allow_single_file = True,
             cfg = "host",
             executable = True,
