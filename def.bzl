@@ -1,3 +1,6 @@
+"""This file provides all user facing functions.
+"""
+
 def _impl_test(ctx):
     files = [ctx.file._shellcheck] + ctx.files.data
     script = "exec " + " ".join([f.short_path for f in files])
