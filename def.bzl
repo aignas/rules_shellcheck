@@ -1,34 +1,19 @@
 """This file provides all user facing functions.
 """
 
-def _impl_test(ctx):
-    files = [ctx.file._shellcheck] + ctx.files.data
-    script = "exec " + " ".join([f.short_path for f in files])
+load("//internal:rules.bzl", _shellcheck_test = "shellcheck_test")
 
-    ctx.actions.write(
-        output = ctx.outputs.executable,
-        content = script,
+def shellcheck_test(name, data, **kwargs):
+    """shellcheck_test takes the files to be checked as 'data'
+
+    Args:
+        name: The name of the rule.
+        data: The list of files to be checked using shellcheck.
+        **kwargs: Forwarded kwargs to the underlying rule.
+    """
+    kwargs.pop("expect_fail", True)
+    return _shellcheck_test(
+        name = name,
+        data = data,
+        **kwargs
     )
-
-    return [
-        DefaultInfo(
-            executable = ctx.outputs.executable,
-            runfiles = ctx.runfiles(files = files),
-        ),
-    ]
-
-shellcheck_test = rule(
-    implementation = _impl_test,
-    attrs = {
-        "data": attr.label_list(
-            allow_files = True,
-        ),
-        "_shellcheck": attr.label(
-            default = Label("//:shellcheck"),
-            allow_single_file = True,
-            cfg = "host",
-            executable = True,
-        ),
-    },
-    test = True,
-)
