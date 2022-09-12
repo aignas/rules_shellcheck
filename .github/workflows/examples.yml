@@ -1,0 +1,22 @@
+name: Examples
+
+on:
+  pull_request: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        example:
+        - bzlmod
+        - check_glob
+        - released_example
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Test
+        run: bazel test //...
+        working-directory: examples/${{ matrix.example }}
