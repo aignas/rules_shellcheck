@@ -23,11 +23,11 @@ def _urls(arch, version):
     ]
 
 def shellcheck_dependencies():
-    version = "v0.8.0"
+    version = "v0.9.0"
     sha256 = {
-        "darwin_amd64": "e065d4afb2620cc8c1d420a9b3e6243c84ff1a693c1ff0e38f279c8f31e86634",
-        "linux_amd64": "ab6ee1b178f014d1b86d1e24da20d1139656c8b0ed34d2867fbb834dad02bf0a",
-        "linux_arm64": "9f47bbff5624babfa712eb9d64ece14c6c46327122d0c54983f627ae3a30a4ac",
+        "darwin_amd64": "7d3730694707605d6e60cec4efcb79a0632d61babc035aa16cda1b897536acf5",
+        "linux_amd64": "700324c6dd0ebea0117591c6cc9d7350d9c7c5c287acbad7630fa17b1d4d9e2f",
+        "linux_arm64": "179c579ef3481317d130adebede74a34dbbc2df961a70916dd4039ebf0735fae",
     }
 
     for arch, sha256 in sha256.items():
