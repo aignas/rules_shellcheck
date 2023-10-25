@@ -1,10 +1,10 @@
 module(
-    name = "com_github_aignas_rules_shellcheck",
+    name = "rules_shellcheck",
     version = "0.0.0",
     compatibility_level = 1,
 )
 
-shellcheck_dependencies = use_extension("@com_github_aignas_rules_shellcheck//:extensions.bzl", "shellcheck_dependencies")
+shellcheck_dependencies = use_extension("@rules_shellcheck//:extensions.bzl", "shellcheck_dependencies")
 use_repo(
     shellcheck_dependencies,
     "shellcheck_darwin_amd64",

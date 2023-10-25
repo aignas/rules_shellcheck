@@ -1,4 +1,4 @@
-load("@com_github_aignas_rules_shellcheck//:def.bzl", "shellcheck_test")
+load("@rules_shellcheck//:def.bzl", "shellcheck_test")
 
 shellcheck_test(
     name = "shellcheck_all",

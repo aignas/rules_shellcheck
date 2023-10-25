@@ -10,13 +10,13 @@ Adding it to your `WORKSPACE`:
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
-    name = "com_github_aignas_rules_shellcheck",
+    name = "rules_shellcheck",
     sha256 = "4e7cc56d344d0adfd20283f7ad8cb4fba822c0b15ce122665b00dd87a27a74b6",
     strip_prefix = "rules_shellcheck-0.1.1",
     url = "https://github.com/aignas/rules_shellcheck/archive/refs/tags/v0.1.1.tar.gz",
 )
 
-load("@com_github_aignas_rules_shellcheck//:deps.bzl", "shellcheck_dependencies")
+load("@rules_shellcheck//:deps.bzl", "shellcheck_dependencies")
 
 shellcheck_dependencies()
 ```
@@ -24,13 +24,13 @@ shellcheck_dependencies()
 Then `shellcheck` can be accessed by running:
 
 ```shell
-bazel run @com_github_aignas_rules_shellcheck//:shellcheck -- <parameters>
+bazel run @rules_shellcheck//:shellcheck -- <parameters>
 ```
 
 And you can define a lint target:
 
 ```starlark
-load("@com_github_aignas_rules_shellcheck//:def.bzl", "shellcheck", "shellcheck_test")
+load("@rules_shellcheck//:def.bzl", "shellcheck", "shellcheck_test")
 
 shellcheck_test(
     name = "shellcheck_test",

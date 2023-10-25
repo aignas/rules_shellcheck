@@ -9,11 +9,19 @@ This document is maintaining changes since the last released version (0.1.1)
 
 ## Unreleased
 
-### Added
+### Changed
 
-* Bump shellcheck to `0.9.0`.
-* Add `severity` and `format` attributes.
+Breaking changes:
+
+* Rename the workspace and module from `com_aignas_com_rules_shellcheck` to
+  `rules_shellcheck` so that a migration to `bazel-contrib` or somewhere else
+  could be possible at some point.
 
 ### Fixed
 
 * Add a missing `sha256` to the `README`.
+
+### Added
+
+* Bump shellcheck to `0.9.0`.
+* Add `severity` and `format` attributes.

@@ -3,7 +3,7 @@
 - OSX 64-bit
 """
 
-load("@com_github_aignas_rules_shellcheck//:deps.bzl", _deps = "shellcheck_dependencies")
+load("@rules_shellcheck//:deps.bzl", _deps = "shellcheck_dependencies")
 
 def _impl(_):
     _deps()
