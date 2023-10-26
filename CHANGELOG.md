@@ -11,6 +11,12 @@ This document is maintaining changes since the last released version (0.1.1)
 
 Nothing yet
 
+## v0.2.1
+
+### Added
+
+* Publishing infrastructure to BCR.
+
 ## v0.2.0
 
 ### Changed
