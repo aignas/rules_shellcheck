@@ -4,8 +4,6 @@ name: Release
 
 on:  # yamllint disable rule:truthy
   push:
-    branches:
-      - "master"
     tags:
       - "*.*.*"
 
@@ -24,7 +22,6 @@ jobs:
         with:
           # Use GH feature to populate the changelog automatically
           generate_release_notes: true
-          prerelease: ${{ github.ref_name }} == "master"
           body_path: release_notes.txt
           fail_on_unmatched_files: true
           files: rules_shellcheck-*.tar.gz
