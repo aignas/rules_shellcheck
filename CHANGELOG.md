@@ -9,7 +9,10 @@ This document is maintaining changes since the last released version (0.1.1)
 
 ## Unreleased
 
-Nothing yet
+### Changed
+
+* `extensions.bzl` file is not internal.
+* `@rules_shellcheck//:shellcheck` target now gives a more helpful error message.
 
 ## v0.2.1
 
