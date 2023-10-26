@@ -4,22 +4,7 @@ Now you do not need to depend on the system shellcheck version in your bazel-man
 
 [![Build Status](https://github.com/aignas/rules_shellcheck/workflows/CI/badge.svg)](https://github.com/aignas/rules_shellcheck/actions)
 
-Adding it to your `WORKSPACE`:
-
-```starlark
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
-http_archive(
-    name = "rules_shellcheck",
-    sha256 = "4e7cc56d344d0adfd20283f7ad8cb4fba822c0b15ce122665b00dd87a27a74b6",
-    strip_prefix = "rules_shellcheck-0.1.1",
-    url = "https://github.com/aignas/rules_shellcheck/archive/refs/tags/v0.1.1.tar.gz",
-)
-
-load("@rules_shellcheck//:deps.bzl", "shellcheck_dependencies")
-
-shellcheck_dependencies()
-```
+Choose your release from the [GH Releases](https://github.com/aignas/rules_shellcheck/releases) and follow setup instructions there.
 
 Then `shellcheck` can be accessed by running:
 
