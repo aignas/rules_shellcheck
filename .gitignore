@@ -1,3 +1,2 @@
-/bazel-*
-/tools/bin/
+bazel-*
 user.bazelrc

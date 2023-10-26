@@ -1,6 +1,6 @@
 # Shellcheck rules for bazel
 
-Now you do not need to depend on the system shellcheck version in your bazel-managed (mono)repos.
+Now you do not need to depend on the system `shellcheck` version in your bazel-managed (mono)repos.
 
 [![Build Status](https://github.com/aignas/rules_shellcheck/workflows/CI/badge.svg)](https://github.com/aignas/rules_shellcheck/actions)
 
@@ -25,3 +25,7 @@ shellcheck_test(
     severity = "warning",
 )
 ```
+
+Note: this is a simple project that allows me to learn about various bazel concepts. Feel free to create PRs contributing to the project or consider using [rules_lint].
+
+[rules_lint]: https://github.com/aspect-build/rules_lint

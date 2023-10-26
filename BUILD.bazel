@@ -24,10 +24,13 @@ config_setting(
 
 alias(
     name = "shellcheck",
-    actual = select({
-        ":darwin_x86_64": "@shellcheck_darwin_amd64//:shellcheck",
-        ":linux_aarch64": "@shellcheck_linux_arm64//:shellcheck",
-        ":linux_x86_64": "@shellcheck_linux_amd64//:shellcheck",
-    }),
+    actual = select(
+        {
+            ":darwin_x86_64": "@shellcheck_darwin_amd64//:shellcheck",
+            ":linux_aarch64": "@shellcheck_linux_arm64//:shellcheck",
+            ":linux_x86_64": "@shellcheck_linux_amd64//:shellcheck",
+        },
+        no_match_error = "binaries for your platform could not be found",
+    ),
     visibility = ["//visibility:public"],
 )
