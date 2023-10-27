@@ -9,16 +9,26 @@ This document is maintaining changes since the last released version (0.1.1)
 
 ## Unreleased
 
+Nothing yet.
+
+## v0.2.4
+
 ### Changed
 
-* `extensions.bzl` file is not internal.
+* `extensions.bzl` file is now internal.
 * `@rules_shellcheck//:shellcheck` target now gives a more helpful error message.
+
+## v0.2.3
+
+Attempting to publish to BCR.
+
+## v0.2.2
+
+Attempting to publish to BCR.
 
 ## v0.2.1
 
-### Added
-
-* Publishing infrastructure to BCR.
+Attempting to publish to BCR.
 
 ## v0.2.0
 
