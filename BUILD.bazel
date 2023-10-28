@@ -1,3 +1,23 @@
+filegroup(
+    name = "distribution",
+    srcs = [
+        "BUILD.bazel",
+        "CHANGELOG.md",
+        "LICENSE",
+        "MODULE.bazel",
+        "README.md",
+        "WORKSPACE",
+        "//internal:distribution",
+    ],
+    visibility = ["//internal/pkg:__pkg__"],
+)
+
+alias(
+    name = "release",
+    actual = "//internal/pkg:release",
+    visibility = ["//:__subpackages__"],
+)
+
 config_setting(
     name = "darwin_x86_64",
     constraint_values = [

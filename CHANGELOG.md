@@ -9,7 +9,9 @@ This document is maintaining changes since the last released version (0.1.1)
 
 ## Unreleased
 
-Nothing yet.
+### Changed
+
+* Packaging is now partially done with `bazel`.
 
 ## v0.2.4
 
