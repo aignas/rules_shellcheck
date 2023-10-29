@@ -76,6 +76,7 @@ jobs:
           retention-days: 5
 
   release:
+    if: ${{ github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     needs: pkg
     steps:
@@ -84,16 +85,11 @@ jobs:
         with:
           name: release
 
-      - name: List artifacts for debugging purposes
-        run: |
-          ls -1 -R .
-
       - name: Release
-        if: ${{ github.event_name != 'pull_request' }}
         uses: softprops/action-gh-release@v1
         with:
           # Use GH feature to populate the changelog automatically
           generate_release_notes: true
-          body_path: release/release_notes.md
+          body_path: release_notes.md
           fail_on_unmatched_files: true
-          files: release/rules_shellcheck-*.tar.gz
+          files: rules_shellcheck-*.tar.gz
