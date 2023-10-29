@@ -69,7 +69,7 @@ jobs:
             //:release -- release
 
       - name: Release
-        if: ${{ github.event != 'pull_request' }}
+        if: ${{ github.event_name != 'pull_request' }}
         uses: softprops/action-gh-release@v1
         with:
           # Use GH feature to populate the changelog automatically

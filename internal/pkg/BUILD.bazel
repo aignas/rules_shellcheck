@@ -31,7 +31,7 @@ genrule(
     outs = ["release_stamped.sh"],
     cmd = "; ".join([
         "BUILD_EMBED_LABEL=$$(grep ^BUILD_EMBED_LABEL bazel-out/stable-status.txt | cut -d' ' -f2)",
-        "sed \"s/\\$${BUILD_EMBED_LABEL}/$$BUILD_EMBED_LABEL/g\" $< >$@",
+        "sed \"s|{BUILD_EMBED_LABEL}|$$BUILD_EMBED_LABEL|g\" $< >$@",
     ]),
     stamp = 1,
 )
