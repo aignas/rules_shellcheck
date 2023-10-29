@@ -84,9 +84,9 @@ jobs:
         with:
           name: release
 
-      - name: Create release archive and notes
+      - name: List artifacts for debugging purposes
         run: |
-          ls -1 release/*
+          ls -1 -R .
 
       - name: Release
         if: ${{ github.event_name != 'pull_request' }}
