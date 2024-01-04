@@ -6,28 +6,23 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
-_LABELS = {
-    "darwin_amd64": "darwin.x86_64",
-    "linux_amd64": "linux.x86_64",
-    "linux_arm64": "linux.aarch64",
-    # darwin_arm64 shellcheck binaries are not distributed from GitHub releases.
-    # windows_amd64 shellcheck binaries are not distributed from GitHub releases.
-}
-
 def _urls(arch, version):
     return [
-        "https://github.com/koalaman/shellcheck/releases/download/{version}/shellcheck-{version}.{arch}.tar.xz".format(
+        "https://github.com/vscode-shellcheck/shellcheck-binaries/releases/download/{version}/shellcheck-{version}.{arch}.tar.gz".format(
             version = version,
-            arch = _LABELS[arch],
+            arch = arch.replace("_", ".", 1),
         ),
     ]
 
 def shellcheck_dependencies():
     version = "v0.9.0"
     sha256 = {
-        "darwin_amd64": "7d3730694707605d6e60cec4efcb79a0632d61babc035aa16cda1b897536acf5",
-        "linux_amd64": "700324c6dd0ebea0117591c6cc9d7350d9c7c5c287acbad7630fa17b1d4d9e2f",
-        "linux_arm64": "179c579ef3481317d130adebede74a34dbbc2df961a70916dd4039ebf0735fae",
+        "darwin_aarch64": "a75b912015aaa5b2a48698b63f3619783d90abda4d32a31362209315e6c1cdf6",
+        "darwin_x86_64":   "d1244da2aa5d0c2874f3a4a680c6ac79a488ff6dbf9928e12dc80ff3fdc294db",
+        "linux_x86_64":    "0ab5711861e6fcafad5aa21587ee75bbd2b16505d56f41c9ba1191a83d314074",
+        "linux_aarch64":    "b5633bd195cfe61a310bd8dcff2514855afefea908942a0fd4d01fa6451cb4e6",
+        "linux_armv6hf":  "4791d36d84a626c4366746d14ad68daf2c07f502da09319c45fa6c5c0a847aa9",
+        "windows_x86_64": "a0f021057b6d6a69a22f6b0db0187bcaca3f5195385e92a7555ad63a6e39ee15",
     }
 
     for arch, sha256 in sha256.items():
@@ -36,7 +31,6 @@ def shellcheck_dependencies():
             name = "shellcheck_{arch}".format(arch = arch),
             build_file_content = """exports_files(["shellcheck"])
 """,
-            strip_prefix = "shellcheck-{version}".format(version = version),
             sha256 = sha256,
             urls = _urls(arch = arch, version = version),
         )
