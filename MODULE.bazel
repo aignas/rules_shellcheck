@@ -4,16 +4,16 @@ module(
     compatibility_level = 1,
 )
 
-bazel_dep(name = "platforms", version = "0.0.7")
+bazel_dep(name = "platforms", version = "0.0.8")
 
 deps = use_extension("//internal:extensions.bzl", "shellcheck_dependencies")
 use_repo(
     deps,
     "shellcheck_darwin_aarch64",
     "shellcheck_darwin_x86_64",
-    "shellcheck_linux_x86_64",
     "shellcheck_linux_aarch64",
     "shellcheck_linux_armv6hf",
+    "shellcheck_linux_x86_64",
     "shellcheck_windows_x86_64",
 )
 
