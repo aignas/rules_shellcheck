@@ -1,3 +1,4 @@
 bazel-*
 user.bazelrc
 /release/
+MODULE.bazel.lock

@@ -1,5 +1,5 @@
 module(
-    name = "example_bzlmod",
+    name = "optional_attributes",
     version = "0.0.0",
     compatibility_level = 1,
 )
