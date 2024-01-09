@@ -41,7 +41,6 @@ jobs:
         example:
           - bzlmod
           - check_glob
-          - released_example
 
     steps:
       - uses: actions/checkout@v4
