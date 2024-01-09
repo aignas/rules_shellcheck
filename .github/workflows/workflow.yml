@@ -39,8 +39,8 @@ jobs:
     strategy:
       matrix:
         example:
-          - bzlmod
           - check_glob
+          - optional_attributes
 
     steps:
       - uses: actions/checkout@v4
