@@ -18,19 +18,18 @@ alias(
     visibility = ["//:__subpackages__"],
 )
 
-constraint_setting(name = "cpu")
 constraint_value(
     name = "armv6hf",
-    constraint_setting = ":cpu",
+    constraint_setting = "@platforms//cpu",
 )
 
-# rasberry pi
+# Raspberry Pi
 config_setting(
     name = "linux_armv6hf",
     constraint_values = [
         "@platforms//os:linux",
         "//:armv6hf",
-    ]
+    ],
 )
 
 config_setting(
