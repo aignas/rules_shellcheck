@@ -10,6 +10,8 @@ filegroup(
         ":def.bzl",
         ":deps.bzl",
         "//internal:distribution",
+        # Needed for BCR registry to run the pre-submit tests
+        "//examples:distribution",
     ],
     visibility = ["//internal/pkg:__pkg__"],
 )
