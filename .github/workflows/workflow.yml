@@ -38,15 +38,15 @@ jobs:
     needs:
       - build
       - test-mac
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Create release archive and notes
-        run: |
-          # Set by GH actions, see
-          # https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables
-          ci/package.sh "${{ github.ref_name }}"
+        # Set by GH actions, see
+        # https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables
+        run: ./ci/package.sh "${{ github.ref_name }}"
 
       - name: Archive release artifacts
         uses: actions/upload-artifact@v3
