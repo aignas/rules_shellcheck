@@ -18,7 +18,7 @@ mkdir -p "$DST"
 RELEASE_ARCHIVE="$DST/rules_shellcheck-$GITHUB_REF_NAME.tar.gz"
 RELEASE_NOTES="$DST/release_notes.md"
 
-cp -v "$ARCHIVE" "$RELEASE_ARCHIVE"
+cp -v "$ARCHIVE" "$RELEASE_ARCHIVE" >&2
 chmod 644 "$RELEASE_ARCHIVE"
 SHA=$(sha256sum "$RELEASE_ARCHIVE" | awk '{print $1}')
 
@@ -27,3 +27,6 @@ sed \
   -e "s/%%SHA256%%/$SHA/g" \
   "${RELEASE_NOTES_TEMPLATE}" \
   > "$RELEASE_NOTES"
+
+# Output the release artifact path
+echo "$RELEASE_ARCHIVE"

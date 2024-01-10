@@ -17,12 +17,13 @@ main() {
     local -r version="${1:-0.0.0}"
 
     # Then build the release artifact
-    bazel run \
-        --stamp --embed_label "$version" \
-        //:release -- release
+    local -r tarball=$(
+        bazel run \
+            --stamp --embed_label "$version" \
+            //:release -- release
+    )
 
     _log "Extracting the tarball into a temporary directory to run examples"
-    local -r tarball="${PWD}/release/rules_shellcheck-${version}.tar.gz"
     tar -xvf "$tarball" -C "$TMPDIR"
 
     # Then run examples with the packaged artifacts
