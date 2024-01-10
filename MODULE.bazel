@@ -1,6 +1,6 @@
 module(
     name = "rules_shellcheck",
-    version = "0.2.4",
+    version = "0.0.0",
     compatibility_level = 1,
 )
 
