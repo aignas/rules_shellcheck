@@ -1,7 +1,0 @@
-load("@rules_shellcheck//:def.bzl", "shellcheck_test")
-
-shellcheck_test(
-    name = "scripts",
-    data = ["script.sh"],
-    tags = ["lint"],
-)

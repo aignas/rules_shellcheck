@@ -7,6 +7,8 @@ filegroup(
         "MODULE.bazel",
         "README.md",
         "WORKSPACE",
+        ":def.bzl",
+        ":deps.bzl",
         "//internal:distribution",
     ],
     visibility = ["//internal/pkg:__pkg__"],
