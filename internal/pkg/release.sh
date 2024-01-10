@@ -19,6 +19,7 @@ RELEASE_ARCHIVE="$DST/rules_shellcheck-$GITHUB_REF_NAME.tar.gz"
 RELEASE_NOTES="$DST/release_notes.md"
 
 cp -v "$ARCHIVE" "$RELEASE_ARCHIVE"
+chmod 644 "$RELEASE_ARCHIVE"
 SHA=$(sha256sum "$RELEASE_ARCHIVE" | awk '{print $1}')
 
 sed \
