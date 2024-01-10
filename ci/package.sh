@@ -26,6 +26,8 @@ main() {
     _log "Extracting the tarball into a temporary directory to run examples"
     tar -xvf "$tarball" -C "$TMPDIR"
 
+    pushd $TMPDIR
+
     # Then run examples with the packaged artifacts
     examples=(
         check_glob
@@ -41,6 +43,8 @@ main() {
             ...
         popd
     done
+
+    popd
     _log "Success"
 }
 
