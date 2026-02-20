@@ -58,6 +58,8 @@ jobs:
   release:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     needs: pkg
     steps:
       - name: Download release artifacts
@@ -68,8 +70,14 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          # Use GH feature to populate the changelog automatically
           generate_release_notes: true
           body_path: release_notes.md
           fail_on_unmatched_files: true
           files: rules_shellcheck-*.tar.gz
+
+      - name: BCR Publish
+        uses: ./.github/workflows/bcr-publish.yaml
+        with:
+          release_version: ${{ github.ref_name }}
+        secrets:
+          BCR_PUBLISH_TOKEN: ${{ secrets.BCR_PUBLISH_TOKEN }}
