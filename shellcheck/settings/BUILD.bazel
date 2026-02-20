@@ -1,0 +1,36 @@
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+
+filegroup(
+    name = "distribution",
+    srcs = glob(["*"]),
+    visibility = ["//shellcheck:__pkg__"],
+)
+
+string_flag(
+    name = "format",
+    build_setting_default = "",
+    values = [
+        "",
+        "checkstyle",
+        "diff",
+        "gcc",
+        "json",
+        "json1",
+        "quiet",
+        "tty",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+string_flag(
+    name = "severity",
+    build_setting_default = "",
+    values = [
+        "",
+        "error",
+        "info",
+        "style",
+        "warning",
+    ],
+    visibility = ["//visibility:public"],
+)
