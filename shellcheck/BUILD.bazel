@@ -1,0 +1,12 @@
+filegroup(
+    name = "distribution",
+    srcs = [
+        "BUILD.bazel",
+        "defs.bzl",
+        "shellcheck_aspect.bzl",
+        "shellcheck_test.bzl",
+        "//shellcheck/internal:distribution",
+        "//shellcheck/settings:distribution",
+    ],
+    visibility = ["//:__pkg__"],
+)

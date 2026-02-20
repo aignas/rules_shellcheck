@@ -1,0 +1,5 @@
+filegroup(
+    name = "distribution",
+    srcs = glob(["*"]),
+    visibility = ["//shellcheck:__pkg__"],
+)

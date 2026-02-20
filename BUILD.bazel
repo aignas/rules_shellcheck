@@ -7,9 +7,7 @@ filegroup(
         "MODULE.bazel",
         "README.md",
         "WORKSPACE",
-        ":def.bzl",
-        ":deps.bzl",
-        "//internal:distribution",
+        "//shellcheck:distribution",
         # Needed for BCR registry to run the pre-submit tests
         "//examples:distribution",
     ],

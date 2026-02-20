@@ -1,4 +1,5 @@
-load("//internal:rules.bzl", "shellcheck_test")
+load(":test.bzl", shellcheck_test = "shellcheck_internal_test")
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 
 shellcheck_test(
     name = "fail_test",
@@ -13,4 +14,15 @@ shellcheck_test(
     data = [
         "testdata/good.sh",
     ],
+)
+
+sh_binary(
+    name = "bad",
+    srcs = ["testdata/bad.sh"],
+    tags = ["manual"],
+)
+
+sh_binary(
+    name = "good",
+    srcs = ["testdata/good.sh"],
 )

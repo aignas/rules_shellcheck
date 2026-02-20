@@ -1,8 +1,7 @@
-"""This file provides all user facing functions.
-"""
+"""shellcheck_test"""
 
 load(
-    "//shellcheck:defs.bzl",
+    "//shellcheck/internal:rules.bzl",
     _shellcheck_test = "shellcheck_test",
 )
 
