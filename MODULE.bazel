@@ -4,11 +4,13 @@ module(
     compatibility_level = 1,
 )
 
-bazel_dep(name = "platforms", version = "0.0.8")
+bazel_dep(name = "bazel_skylib", version = "1.8.2")
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "rules_shell", version = "0.6.1")
 
-deps = use_extension("//internal:extensions.bzl", "shellcheck_dependencies")
+shellcheck = use_extension("//shellcheck/internal:extensions.bzl", "shellcheck")
 use_repo(
-    deps,
+    shellcheck,
     "shellcheck_darwin_aarch64",
     "shellcheck_darwin_x86_64",
     "shellcheck_linux_aarch64",
