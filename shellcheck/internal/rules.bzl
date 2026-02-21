@@ -2,6 +2,21 @@
 """
 
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+load(":toolchain.bzl", "TOOLCHAIN_TYPE")
+
+_SHELL_CONTENT = """\
+#!/bin/sh
+
+set -eu
+
+{shellcheck} {args}
+"""
+
+_BATCH_CONTENT = """\
+@ECHO OFF
+
+{shellcheck} {args}
+"""
 
 def shellcheck_test_impl(ctx, expect_fail = False):
     """The implementation of the `shellcheck_test` rule.
@@ -13,38 +28,55 @@ def shellcheck_test_impl(ctx, expect_fail = False):
     Returns:
         list: All providers.
     """
-    cmd = [ctx.file._shellcheck.short_path]
+    is_windows = ctx.target_platform_has_constraint(
+        ctx.attr._windows_constraint[platform_common.ConstraintValueInfo],
+    )
+
+    toolchain = ctx.toolchains[TOOLCHAIN_TYPE]
+    executable = ctx.actions.declare_file("{}{}".format(
+        ctx.label.name,
+        ".bat" if is_windows else ".sh",
+    ))
+
+    cmd = []
     if ctx.attr.format:
         cmd.append("--format={}".format(ctx.attr.format))
     if ctx.attr.severity:
         cmd.append("--severity={}".format(ctx.attr.severity))
-    cmd += [f.short_path for f in ctx.files.data]
-    cmd = " ".join(cmd)
+
+    shellcheck_path = toolchain.shellcheck.short_path
+    srcs = [f.short_path for f in ctx.files.data]
+    if is_windows:
+        shellcheck_path.replace("/", "\\")
+        srcs = [src.replace("/", "\\") for src in srcs]
+
+    cmd.extend(srcs)
 
     if expect_fail:
-        script = "{cmd} || exit 0\nexit1".format(cmd = cmd)
-    else:
-        script = "exec {cmd}".format(cmd = cmd)
+        cmd.append("|| exit 0; exit 1")
 
     ctx.actions.write(
-        output = ctx.outputs.executable,
-        content = script,
+        output = executable,
+        content = (_BATCH_CONTENT if is_windows else _SHELL_CONTENT).format(
+            shellcheck = shellcheck_path,
+            args = " ".join(cmd),
+        ),
         is_executable = True,
     )
 
     return [
         DefaultInfo(
-            executable = ctx.outputs.executable,
-            runfiles = ctx.runfiles(files = [ctx.file._shellcheck] + ctx.files.data),
+            executable = executable,
+            runfiles = ctx.runfiles(
+                files = [toolchain.shellcheck] + ctx.files.data,
+                transitive_files = toolchain.all_files,
+            ),
         ),
     ]
 
 ATTRS = {
     "data": attr.label_list(
         allow_files = True,
-    ),
-    "expect_fail": attr.bool(
-        default = False,
     ),
     "format": attr.string(
         values = ["checkstyle", "diff", "gcc", "json", "json1", "quiet", "tty"],
@@ -54,12 +86,8 @@ ATTRS = {
         values = ["error", "info", "style", "warning"],
         doc = "The severity of the lint results.",
     ),
-    "_shellcheck": attr.label(
-        default = Label("//:shellcheck"),
-        allow_single_file = True,
-        cfg = "exec",
-        executable = True,
-        doc = "The shellcheck executable to use.",
+    "_windows_constraint": attr.label(
+        default = Label("@platforms//os:windows"),
     ),
 }
 
@@ -67,16 +95,17 @@ shellcheck_test = rule(
     implementation = shellcheck_test_impl,
     attrs = ATTRS,
     test = True,
+    toolchains = [TOOLCHAIN_TYPE],
 )
 
-_SHELL_CONTENT = """\
+_ASPECT_SHELL_CONTENT = """\
 #!/bin/sh
 
 echo '' > '{output}'
 exec '{shellcheck}' $@
 """
 
-_BATCH_CONTENT = """\
+_ASPECT_BATCH_CONTENT = """\
 @ECHO OFF
 
 echo "" > {output}
@@ -111,6 +140,8 @@ def _shellcheck_aspect_impl(target, ctx):
     if not srcs:
         return []
 
+    toolchain = ctx.toolchains[TOOLCHAIN_TYPE]
+
     inputs_direct = getattr(ctx.rule.files, "srcs", []) + getattr(ctx.rule.files, "data", [])
     inputs_transitive = []
 
@@ -123,7 +154,7 @@ def _shellcheck_aspect_impl(target, ctx):
     format = ctx.attr._format[BuildSettingInfo].value
     severity = ctx.attr._format[BuildSettingInfo].value
 
-    shellcheck = ctx.executable._shellcheck
+    shellcheck = toolchain.shellcheck
     is_windows = True if shellcheck.basename.endswith(".exe") else False
 
     executable = ctx.actions.declare_file("{}.shellcheck.{}".format(target.label.name, "bat" if is_windows else "sh"))
@@ -131,20 +162,14 @@ def _shellcheck_aspect_impl(target, ctx):
 
     ctx.actions.write(
         output = executable,
-        content = (_BATCH_CONTENT if is_windows else _SHELL_CONTENT).format(
+        content = (_ASPECT_BATCH_CONTENT if is_windows else _ASPECT_SHELL_CONTENT).format(
             output = output.path,
-            shellcheck = ctx.executable._shellcheck.path,
+            shellcheck = shellcheck.path,
         ),
         is_executable = True,
     )
 
-    tools = depset([ctx.executable._shellcheck])
-    if DefaultInfo in ctx.attr._shellcheck:
-        tools = depset(transitive = [
-            tools,
-            ctx.attr._shellcheck[DefaultInfo].files,
-            ctx.attr._shellcheck[DefaultInfo].default_runfiles.files,
-        ])
+    tools = depset([shellcheck], transitive = [toolchain.all_files])
 
     args = ctx.actions.args()
     if format:
@@ -182,12 +207,6 @@ shellcheck_aspect = aspect(
         "_severity": attr.label(
             default = Label("//shellcheck/settings:severity"),
         ),
-        "_shellcheck": attr.label(
-            default = Label("//:shellcheck"),
-            allow_single_file = True,
-            cfg = "exec",
-            executable = True,
-            doc = "The shellcheck executable to use.",
-        ),
     },
+    toolchains = [TOOLCHAIN_TYPE],
 )

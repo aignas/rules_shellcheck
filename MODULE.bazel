@@ -16,7 +16,12 @@ use_repo(
     "shellcheck_linux_aarch64",
     "shellcheck_linux_armv6hf",
     "shellcheck_linux_x86_64",
+    "shellcheck_toolchains",
     "shellcheck_windows_x86_64",
+)
+
+register_toolchains(
+    "@shellcheck_toolchains//:all",
 )
 
 # Dev dependencies

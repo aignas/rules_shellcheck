@@ -1,3 +1,5 @@
+load("//shellcheck/internal:toolchain.bzl", "current_shellcheck_toolchain")
+
 filegroup(
     name = "distribution",
     srcs = [
@@ -5,8 +7,25 @@ filegroup(
         "defs.bzl",
         "shellcheck_aspect.bzl",
         "shellcheck_test.bzl",
+        "shellcheck_toolchain.bzl",
         "//shellcheck/internal:distribution",
         "//shellcheck/settings:distribution",
     ],
     visibility = ["//:__pkg__"],
+)
+
+toolchain_type(
+    name = "toolchain_type",
+    visibility = ["//visibility:public"],
+)
+
+current_shellcheck_toolchain(
+    name = "current_shellcheck_toolchain",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "shellcheck",
+    actual = ":current_shellcheck_toolchain",
+    visibility = ["//visibility:public"],
 )
