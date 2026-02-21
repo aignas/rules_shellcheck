@@ -1,0 +1,58 @@
+---
+name: Release
+
+on: # yamllint disable rule:truthy
+  push:
+    branches:
+      - main
+    tags:
+      - "*.*.*"
+
+jobs:
+  pkg:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Create release archive and notes
+        # Set by GH actions, see
+        # https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables
+        run: ./ci/package.sh "${{ github.ref_name }}"
+
+      - name: Archive release artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          name: release
+          path: release/*
+          retention-days: 5
+
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    needs: pkg
+    steps:
+      - name: Download release artifacts
+        uses: actions/download-artifact@v6
+        with:
+          name: release
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          body_path: release_notes.md
+          fail_on_unmatched_files: true
+          files: rules_shellcheck-*.tar.gz
+
+  bcr-publish:
+    needs: [release]
+    permissions:
+      contents: write
+    uses: ./.github/workflows/bcr-publish.yml
+    with:
+      release_version: ${{ needs.release.outputs.release_version }}
+    secrets:
+      BCR_PUBLISH_TOKEN: ${{ secrets.BCR_PUBLISH_TOKEN }}
