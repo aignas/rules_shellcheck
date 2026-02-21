@@ -3,8 +3,6 @@ name: Release
 
 on: # yamllint disable rule:truthy
   push:
-    branches:
-      - main
     tags:
       - "*.*.*"
 
