@@ -4,6 +4,7 @@ filegroup(
     name = "distribution",
     srcs = [
         "BUILD.bazel",
+        ".shellcheckrc",
         "defs.bzl",
         "shellcheck_aspect.bzl",
         "shellcheck_test.bzl",
@@ -27,5 +28,11 @@ current_shellcheck_toolchain(
 alias(
     name = "shellcheck",
     actual = ":current_shellcheck_toolchain",
+    visibility = ["//visibility:public"],
+)
+
+label_flag(
+    name = "rc",
+    build_setting_default = ".shellcheckrc",
     visibility = ["//visibility:public"],
 )

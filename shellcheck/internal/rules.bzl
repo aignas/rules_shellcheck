@@ -45,11 +45,14 @@ def shellcheck_test_impl(ctx, expect_fail = False):
         cmd.append("--severity={}".format(ctx.attr.severity))
 
     shellcheck_path = toolchain.shellcheck.short_path
+    shellcheck_rc = toolchain.shellcheckrc.short_path
     srcs = [f.short_path for f in ctx.files.data]
     if is_windows:
         shellcheck_path.replace("/", "\\")
+        shellcheck_rc.replace("/", "\\")
         srcs = [src.replace("/", "\\") for src in srcs]
 
+    cmd.append("--rcfile={}".format(shellcheck_rc))
     cmd.extend(srcs)
 
     if expect_fail:
@@ -172,6 +175,8 @@ def _shellcheck_aspect_impl(target, ctx):
     tools = depset([shellcheck], transitive = [toolchain.all_files])
 
     args = ctx.actions.args()
+    args.add(toolchain.shellcheckrc, format = "--rcfile=%s")
+
     if format:
         args.add(format, format = "--format=%s")
 

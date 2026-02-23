@@ -25,6 +25,7 @@ def _shellcheck_toolchain_impl(ctx):
         platform_common.ToolchainInfo(
             label = ctx.label,
             shellcheck = ctx.file.shellcheck,
+            shellcheckrc = ctx.file._shellcheckrc,
             make_variable_info = make_variable_info,
             all_files = depset(transitive = all_files),
         ),
@@ -41,6 +42,10 @@ shellcheck_toolchain = rule(
             cfg = "exec",
             executable = True,
             doc = "The shellcheck executable to use.",
+        ),
+        "_shellcheckrc": attr.label(
+            allow_single_file = True,
+            default = Label("//shellcheck:rc"),
         ),
     },
 )
