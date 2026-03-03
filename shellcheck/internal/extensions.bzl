@@ -5,6 +5,7 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+load("@rules_shellcheck//shellcheck:shellcheck_toolchain.bzl", "shellcheck_toolchain")
 
 _HUB_BUILD_CONTENT = """\
 {toolchains}
@@ -96,44 +97,45 @@ def _urls(arch, version):
         url,
     ]
 
-_SHELLCHECK_UNIX_BUILD_CONTENT = """\
-load("@rules_shellcheck//shellcheck:shellcheck_toolchain.bzl", "shellcheck_toolchain")
+def create_shellcheck_repository_targets(name, shellcheck):
+    """A utility function for defining shellcheck repositories
 
-package(default_visibility = ["//visibility:public"])
+    Args:
+        name (str): The name of the repository.
+        shellcheck (str): THe path to the shellcheck binary.
+    """
+    visibility = ["//visibility:public"]
 
-exports_files(["shellcheck"])
+    native.exports_files(
+        [shellcheck],
+        visibility = visibility,
+    )
 
-alias(
+    native.alias(
+        name = name,
+        actual = shellcheck,
+        visibility = visibility,
+    )
+
+    if shellcheck.endswith(".exe"):
+        native.alias(
+            name = shellcheck[:-4],
+            actual = shellcheck,
+            visibility = visibility,
+        )
+
+    shellcheck_toolchain(
+        name = "toolchain",
+        shellcheck = shellcheck,
+        visibility = visibility,
+    )
+
+_SHELLCHECK_CONTENT = """\
+load("@rules_shellcheck//shellcheck/internal:extensions.bzl", "create_shellcheck_repository_targets")
+
+create_shellcheck_repository_targets(
     name = "{name}",
-    actual = "shellcheck",
-)
-
-shellcheck_toolchain(
-    name = "toolchain",
-    shellcheck = "shellcheck",
-)
-"""
-
-_SHELLCHECK_WINDOWS_BUILD_CONTENT = """\
-load("@rules_shellcheck//shellcheck:shellcheck_toolchain.bzl", "shellcheck_toolchain")
-
-package(default_visibility = ["//visibility:public"])
-
-exports_files(["shellcheck.exe"])
-
-alias(
-    name = "shellcheck",
-    actual = "shellcheck.exe",
-)
-
-alias(
-    name = "{name}",
-    actual = "shellcheck.exe",
-)
-
-shellcheck_toolchain(
-    name = "toolchain",
-    shellcheck = ":shellcheck",
+    shellcheck = "{shellcheck}",
 )
 """
 
@@ -155,22 +157,21 @@ def shellcheck_dependencies():
         name = "shellcheck_{arch}".format(arch = arch)
 
         strip_prefix = "shellcheck-{version}".format(version = version)
-        build_file_content = _SHELLCHECK_UNIX_BUILD_CONTENT.format(
-            name = name,
-        )
+        shellcheck_bin = "shellcheck"
 
         # Special case, as it is a zip archive with no prefix to strip.
         if "windows" in arch:
             strip_prefix = None
-            build_file_content = _SHELLCHECK_WINDOWS_BUILD_CONTENT.format(
-                name = name,
-            )
+            shellcheck_bin = "shellcheck.exe"
 
         maybe(
             http_archive,
             name = name,
             strip_prefix = strip_prefix,
-            build_file_content = build_file_content,
+            build_file_content = _SHELLCHECK_CONTENT.format(
+                name = name,
+                shellcheck = shellcheck_bin,
+            ),
             sha256 = sha256,
             urls = _urls(arch = arch, version = version),
         )

@@ -3,8 +3,8 @@ load("//shellcheck/internal:toolchain.bzl", "current_shellcheck_toolchain")
 filegroup(
     name = "distribution",
     srcs = [
-        "BUILD.bazel",
         ".shellcheckrc",
+        "BUILD.bazel",
         "defs.bzl",
         "shellcheck_aspect.bzl",
         "shellcheck_test.bzl",
