@@ -1,6 +1,4 @@
-## Using Bzlmod with Bazel 6
-
-**NOTE: bzlmod support is still beta. APIs subject to change.**
+## bzlmod
 
 Add to your `MODULE.bazel` file:
 

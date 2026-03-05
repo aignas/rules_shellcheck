@@ -7,10 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This document is maintaining changes since the last released version (0.1.1)
 
-## Unreleased
+## v0.5.0
 
-### Changed
+* Add {obj}`shellcheck_aspect`.
+* Add {obj}`shellcheck_toolchain` for better configurability.
 
+## v0.4.0
+
+* Update deps
+
+## v0.3.0
+
+* Update deps
 * Packaging is now partially done with `bazel`.
 
 ## v0.2.4
