@@ -18,4 +18,5 @@ shellcheck_internal_test = rule(
         ),
     },
     test = True,
+    toolchains = ["@rules_shellcheck//shellcheck:toolchain_type"],
 )
