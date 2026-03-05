@@ -1,0 +1,16 @@
+load("@rules_shell//shell:sh_library.bzl", "sh_library")
+
+sh_library(
+    name = "lib1",
+    srcs = ["lib1.sh"],
+    visibility = ["//tests/follow_source:__subpackages__"],
+    deps = ["//tests/follow_source/lib2"],
+)
+
+# TODO: https://github.com/aignas/rules_shellcheck/issues/53
+# shellcheck_test(
+#     name = "lib1_test",
+#     data = [
+#         ":lib1",
+#     ],
+# )

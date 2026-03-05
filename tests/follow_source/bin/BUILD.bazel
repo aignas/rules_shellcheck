@@ -1,0 +1,16 @@
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+
+sh_binary(
+    name = "bin",
+    srcs = ["bin.sh"],
+    visibility = ["//tests/follow_source:__subpackages__"],
+    deps = ["//tests/follow_source/lib1"],
+)
+
+# TODO: https://github.com/aignas/rules_shellcheck/issues/53
+# shellcheck_test(
+#     name = "bin_test",
+#     data = [
+#         ":bin",
+#     ],
+# )
