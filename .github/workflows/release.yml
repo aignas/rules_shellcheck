@@ -49,8 +49,14 @@ jobs:
     needs: [release]
     permissions:
       contents: write
-    uses: ./.github/workflows/bcr-publish.yml
+    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.1.0
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
     with:
-      release_version: ${{ needs.release.outputs.release_version }}
+      tag_name: ${{ needs.release.outputs.release_version }}
+      registry_fork: aignas/bazel-central-registry
+      attest: true
     secrets:
-      BCR_PUBLISH_TOKEN: ${{ secrets.BCR_PUBLISH_TOKEN }}
+      publish_token: ${{ secrets.BCR_PUBLISH_TOKEN }}
