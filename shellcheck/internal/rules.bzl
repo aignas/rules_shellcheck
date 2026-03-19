@@ -71,7 +71,7 @@ def shellcheck_test_impl(ctx, expect_fail = False):
         DefaultInfo(
             executable = executable,
             runfiles = ctx.runfiles(
-                files = [toolchain.shellcheck] + ctx.files.data,
+                files = [toolchain.shellcheck, toolchain.shellcheckrc] + ctx.files.data,
                 transitive_files = toolchain.all_files,
             ),
         ),
@@ -101,19 +101,52 @@ shellcheck_test = rule(
     toolchains = [TOOLCHAIN_TYPE],
 )
 
-_ASPECT_SHELL_CONTENT = """\
-#!/bin/sh
+ShellcheckSrcsInfo = provider(
+    doc = "A provider containing relevant data for linting.",
+    fields = {
+        "source_paths": "depset[str]: `--source-path` target paths.",
+        "srcs": "depset[File]: Sources collected from the target.",
+        "transitive_source_paths": "depset[str]: Transitive source paths collected from dependencies.",
+        "transitive_srcs": "depset[File]: Transitive sources collected from dependencies.",
+    },
+)
 
-echo '' > '{output}'
-exec '{shellcheck}' $@
-"""
+def _shellcheck_srcs_aspect_impl(_target, ctx):
+    # TODO: Replace when a `rules_shell` provider is available
+    # https://github.com/bazelbuild/rules_shell/issues/16
+    rule_name = ctx.rule.kind
+    if rule_name not in ["sh_binary", "sh_test", "sh_library"]:
+        return []
 
-_ASPECT_BATCH_CONTENT = """\
-@ECHO OFF
+    srcs = getattr(ctx.rule.files, "srcs", [])
+    source_paths = [src.dirname for src in srcs]
 
-echo "" > {output}
-{shellcheck} %*
-"""
+    transitive_srcs = []
+    transitive_source_paths = []
+
+    for dep in getattr(ctx.rule.attr, "deps", []):
+        if ShellcheckSrcsInfo in dep:
+            transitive_srcs.extend([
+                dep[ShellcheckSrcsInfo].srcs,
+                dep[ShellcheckSrcsInfo].transitive_srcs,
+            ])
+            transitive_source_paths.extend([
+                dep[ShellcheckSrcsInfo].source_paths,
+                dep[ShellcheckSrcsInfo].transitive_source_paths,
+            ])
+
+    return [ShellcheckSrcsInfo(
+        srcs = depset(srcs),
+        source_paths = depset(source_paths),
+        transitive_srcs = depset(transitive = transitive_srcs),
+        transitive_source_paths = depset(transitive = transitive_source_paths),
+    )]
+
+_shellcheck_srcs_aspect = aspect(
+    doc = "An aspect for collecting data about how to lint the target.",
+    attr_aspects = ["deps"],
+    implementation = _shellcheck_srcs_aspect_impl,
+)
 
 def _shellcheck_aspect_impl(target, ctx):
     if target.label.workspace_root.startswith("external"):
@@ -129,14 +162,14 @@ def _shellcheck_aspect_impl(target, ctx):
         if tag.replace("-", "_").lower() in ignore_tags:
             return []
 
-    # TODO: https://github.com/aignas/rules_shellcheck/issues/23
-    rule_name = ctx.rule.kind
-    if rule_name not in ["sh_binary", "sh_test", "sh_library"]:
+    if ShellcheckSrcsInfo not in target:
         return []
+
+    src_info = target[ShellcheckSrcsInfo]
 
     srcs = [
         src
-        for src in getattr(ctx.rule.files, "srcs", [])
+        for src in src_info.srcs.to_list()
         if src.is_source
     ]
 
@@ -145,8 +178,8 @@ def _shellcheck_aspect_impl(target, ctx):
 
     toolchain = ctx.toolchains[TOOLCHAIN_TYPE]
 
-    inputs_direct = getattr(ctx.rule.files, "srcs", []) + getattr(ctx.rule.files, "data", [])
-    inputs_transitive = []
+    inputs_direct = [toolchain.shellcheckrc] + getattr(ctx.rule.files, "data", [])
+    inputs_transitive = [src_info.srcs, src_info.transitive_srcs]
 
     if DefaultInfo in target:
         inputs_transitive.extend([
@@ -157,25 +190,14 @@ def _shellcheck_aspect_impl(target, ctx):
     format = ctx.attr._format[BuildSettingInfo].value
     severity = ctx.attr._format[BuildSettingInfo].value
 
-    shellcheck = toolchain.shellcheck
-    is_windows = True if shellcheck.basename.endswith(".exe") else False
-
-    executable = ctx.actions.declare_file("{}.shellcheck.{}".format(target.label.name, "bat" if is_windows else "sh"))
     output = ctx.actions.declare_file("{}.shellcheck.ok".format(target.label.name))
 
-    ctx.actions.write(
-        output = executable,
-        content = (_ASPECT_BATCH_CONTENT if is_windows else _ASPECT_SHELL_CONTENT).format(
-            output = output.path,
-            shellcheck = shellcheck.path,
-        ),
-        is_executable = True,
-    )
-
-    tools = depset([shellcheck], transitive = [toolchain.all_files])
+    tools = depset([toolchain.shellcheck], transitive = [toolchain.all_files])
 
     args = ctx.actions.args()
+    args.add(toolchain.shellcheck)
     args.add(toolchain.shellcheckrc, format = "--rcfile=%s")
+    args.add_all(src_info.source_paths, format_each = "--source-path=%s")
 
     if format:
         args.add(format, format = "--format=%s")
@@ -188,10 +210,12 @@ def _shellcheck_aspect_impl(target, ctx):
     ctx.actions.run(
         mnemonic = "Shellcheck",
         progress_message = "Shellcheck {}".format(target.label),
-        executable = executable,
+        executable = ctx.file._runner,
         inputs = depset(inputs_direct, transitive = inputs_transitive),
         arguments = [args],
-        env = ctx.configuration.default_shell_env,
+        env = ctx.configuration.default_shell_env | {
+            "SHELLCHECK_ASPECT_OUTPUT": output.path,
+        },
         tools = tools,
         outputs = [output],
     )
@@ -209,9 +233,14 @@ shellcheck_aspect = aspect(
         "_format": attr.label(
             default = Label("//shellcheck/settings:format"),
         ),
+        "_runner": attr.label(
+            allow_single_file = True,
+            default = Label("//shellcheck/internal:aspect_runner"),
+        ),
         "_severity": attr.label(
             default = Label("//shellcheck/settings:severity"),
         ),
     },
     toolchains = [TOOLCHAIN_TYPE],
+    requires = [_shellcheck_srcs_aspect],
 )
