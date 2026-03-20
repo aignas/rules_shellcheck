@@ -47,8 +47,6 @@ jobs:
 
   bcr-publish:
     needs: [release]
-    permissions:
-      contents: write
     uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.1.0
     permissions:
       contents: write
