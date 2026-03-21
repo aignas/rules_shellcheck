@@ -55,6 +55,10 @@ jobs:
     with:
       tag_name: ${{ needs.release.outputs.release_version }}
       registry_fork: aignas/bazel-central-registry
+      author_name: aignas
+      author_email: 240938+aignas@users.noreply.github.com
+      tag_prefix: ""
+      draft: false
       attest: true
     secrets:
       publish_token: ${{ secrets.BCR_PUBLISH_TOKEN }}
