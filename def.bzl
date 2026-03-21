@@ -1,9 +1,0 @@
-"""This file provides all user facing functions.
-"""
-
-load(
-    "//shellcheck:defs.bzl",
-    _shellcheck_test = "shellcheck_test",
-)
-
-shellcheck_test = _shellcheck_test
