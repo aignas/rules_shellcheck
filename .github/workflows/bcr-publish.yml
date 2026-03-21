@@ -29,7 +29,7 @@ jobs:
     uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.1.0
     with:
       attest: false
-      tag: ${{ inputs.release_version }}
+      tag_name: ${{ inputs.release_version }}
       author_name: aignas
       author_email: 240938+aignas@users.noreply.github.com
       # Tags don't include a "v" prefix
