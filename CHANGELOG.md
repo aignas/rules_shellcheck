@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This document is maintaining changes since the last released version (0.1.1)
 
+## v0.6.1
+
+* Add `--external-sources` support to {obj}`shellcheck_aspect`.
+
 ## v0.5.0
 
 * Add {obj}`shellcheck_aspect`.
