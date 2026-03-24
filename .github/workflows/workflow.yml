@@ -19,17 +19,17 @@ jobs:
         include:
           - os: macos-latest
           - os: ubuntu-latest
+          - os: ubuntu-24.04-arm
+          - os: windows-latest
 
     steps:
       - uses: actions/checkout@v6
-
-      - name: Test fetch
-        run: bazel fetch //...
 
       - name: Test
         run: bazel test //...
 
       - name: Create release archive and notes
+        if: startswith(runner.os, 'Windows') != true
         # Set by GH actions, see
         # https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables
         run: ./ci/package.sh "${{ github.ref_name }}"

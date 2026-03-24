@@ -11,14 +11,20 @@ _SHELL_CONTENT = """\
 
 set -eu
 
-{shellcheck} {args}
+"{shellcheck}" {args}{post}
 """
 
 _BATCH_CONTENT = """\
 @ECHO OFF
 
-{shellcheck} {args}
+"{shellcheck}" {args}{post}
 """
+
+def _quote_for_shell(value):
+    return "\"{}\"".format(value.replace("\"", "\\\""))
+
+def _quote_for_batch(value):
+    return "\"{}\"".format(value.replace("\"", "\"\""))
 
 def shellcheck_test_impl(ctx, expect_fail = False):
     """The implementation of the `shellcheck_test` rule.
@@ -50,21 +56,27 @@ def shellcheck_test_impl(ctx, expect_fail = False):
     shellcheck_rc = toolchain.shellcheckrc.short_path
     srcs = [f.short_path for f in ctx.files.data]
     if is_windows:
-        shellcheck_path.replace("/", "\\")
-        shellcheck_rc.replace("/", "\\")
+        shellcheck_path = shellcheck_path.replace("/", "\\")
+        shellcheck_rc = shellcheck_rc.replace("/", "\\")
         srcs = [src.replace("/", "\\") for src in srcs]
 
-    cmd.append("--rcfile={}".format(shellcheck_rc))
-    cmd.extend(srcs)
+    if is_windows:
+        cmd.append("--rcfile={}".format(_quote_for_batch(shellcheck_rc)))
+        cmd.extend([_quote_for_batch(src) for src in srcs])
+    else:
+        cmd.append("--rcfile={}".format(_quote_for_shell(shellcheck_rc)))
+        cmd.extend([_quote_for_shell(src) for src in srcs])
 
+    post = ""
     if expect_fail:
-        cmd.append("|| exit 0; exit 1")
+        post = " && exit /b 1 || exit /b 0" if is_windows else " || exit 0\nexit 1"
 
     ctx.actions.write(
         output = executable,
         content = (_BATCH_CONTENT if is_windows else _SHELL_CONTENT).format(
             shellcheck = shellcheck_path,
             args = " ".join(cmd),
+            post = post,
         ),
         is_executable = True,
     )
@@ -144,6 +156,12 @@ _shellcheck_srcs_aspect = aspect(
     implementation = _shellcheck_srcs_aspect_impl,
 )
 
+def _unix_path_arg(value):
+    return value.path
+
+def _windows_path_arg(value):
+    return value.path.replace("/", "\\")
+
 def _shellcheck_aspect_impl(target, ctx):
     if target.label.workspace_root.startswith("external"):
         return []
@@ -173,6 +191,9 @@ def _shellcheck_aspect_impl(target, ctx):
         return []
 
     toolchain = ctx.toolchains[TOOLCHAIN_TYPE]
+    is_windows = ctx.target_platform_has_constraint(
+        ctx.attr._windows_constraint[platform_common.ConstraintValueInfo],
+    )
 
     inputs_direct = [toolchain.shellcheckrc] + getattr(ctx.rule.files, "data", [])
     inputs_transitive = [src_info.srcs, src_info.transitive_srcs]
@@ -184,15 +205,21 @@ def _shellcheck_aspect_impl(target, ctx):
         ])
 
     format = ctx.attr._format[BuildSettingInfo].value
-    severity = ctx.attr._format[BuildSettingInfo].value
+    severity = ctx.attr._severity[BuildSettingInfo].value
 
     output = ctx.actions.declare_file("{}.shellcheck.ok".format(target.label.name))
 
     tools = depset([toolchain.shellcheck], transitive = [toolchain.all_files])
 
+    shellcheck_path = toolchain.shellcheck.path
+    shellcheck_rc_path = toolchain.shellcheckrc.path
+    if is_windows:
+        shellcheck_path = shellcheck_path.replace("/", "\\")
+        shellcheck_rc_path = shellcheck_rc_path.replace("/", "\\")
+
     args = ctx.actions.args()
-    args.add(toolchain.shellcheck)
-    args.add(toolchain.shellcheckrc, format = "--rcfile=%s")
+    args.add(shellcheck_path)
+    args.add(shellcheck_rc_path, format = "--rcfile=%s")
     args.add_all(src_info.source_paths, format_each = "--source-path=%s")
 
     if format:
@@ -201,7 +228,7 @@ def _shellcheck_aspect_impl(target, ctx):
     if severity:
         args.add(severity, format = "--severity=%s")
 
-    args.add_all(srcs)
+    args.add_all(srcs, map_each = _windows_path_arg if is_windows else _unix_path_arg)
 
     ctx.actions.run(
         mnemonic = "Shellcheck",
@@ -235,6 +262,9 @@ shellcheck_aspect = aspect(
         ),
         "_severity": attr.label(
             default = Label("//shellcheck/settings:severity"),
+        ),
+        "_windows_constraint": attr.label(
+            default = Label("@platforms//os:windows"),
         ),
     },
     toolchains = [TOOLCHAIN_TYPE],
