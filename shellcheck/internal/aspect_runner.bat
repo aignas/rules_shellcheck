@@ -1,6 +1,5 @@
-#!/bin/sh
+@ECHO OFF
 
-set -eu
-
-echo "" > "${SHELLCHECK_ASPECT_OUTPUT}"
-exec $@
+echo "" > "%SHELLCHECK_ASPECT_OUTPUT%"
+call %*
+exit /b %ERRORLEVEL%
