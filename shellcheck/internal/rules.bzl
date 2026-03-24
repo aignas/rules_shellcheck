@@ -2,6 +2,8 @@
 """
 
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+load("@rules_shell//shell:sh_binary_info.bzl", "ShBinaryInfo")
+load("@rules_shell//shell:sh_info.bzl", "ShInfo")
 load(":toolchain.bzl", "TOOLCHAIN_TYPE")
 
 _SHELL_CONTENT = """\
@@ -112,12 +114,6 @@ ShellcheckSrcsInfo = provider(
 )
 
 def _shellcheck_srcs_aspect_impl(_target, ctx):
-    # TODO: Replace when a `rules_shell` provider is available
-    # https://github.com/bazelbuild/rules_shell/issues/16
-    rule_name = ctx.rule.kind
-    if rule_name not in ["sh_binary", "sh_test", "sh_library"]:
-        return []
-
     srcs = getattr(ctx.rule.files, "srcs", [])
     source_paths = [src.dirname for src in srcs]
 
@@ -243,4 +239,5 @@ shellcheck_aspect = aspect(
     },
     toolchains = [TOOLCHAIN_TYPE],
     requires = [_shellcheck_srcs_aspect],
+    required_providers = [[ShInfo], [ShBinaryInfo]],
 )
