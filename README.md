@@ -15,7 +15,7 @@ bazel run @rules_shellcheck//:shellcheck -- <parameters>
 And you can define a lint target:
 
 ```starlark
-load("@rules_shellcheck//:def.bzl", "shellcheck", "shellcheck_test")
+load("@rules_shellcheck//shellcheck:shellcheck_test.bzl", "shellcheck_test")
 
 shellcheck_test(
     name = "shellcheck_test",
