@@ -7,53 +7,41 @@ on: # yamllint disable rule:truthy
       - "*.*.*"
 
 jobs:
-  pkg:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Create release archive and notes
-        # Set by GH actions, see
-        # https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables
-        run: ./ci/package.sh "${{ github.ref_name }}"
-
-      - name: Archive release artifacts
-        uses: actions/upload-artifact@v6
-        with:
-          name: release
-          path: release/*
-          retention-days: 5
-
+  # Delegate the release archive build + attestation + GitHub release
+  # creation to the bazel-contrib reusable workflow. BCR's verifier
+  # only trusts attestations whose builder ID matches this reusable
+  # workflow path; rolling our own actions/attest-build-provenance
+  # would produce a valid SLSA attestation that BCR would still reject.
+  #
+  # The reusable workflow calls .github/workflows/release_prep.sh
+  # (hardcoded path) with the tag as $1, expects release notes on
+  # stdout, and expects release_files to be produced in cwd.
   release:
-    runs-on: ubuntu-latest
     permissions:
       contents: write
-    needs: pkg
-    steps:
-      - name: Download release artifacts
-        uses: actions/download-artifact@v7
-        with:
-          name: release
-
-      - name: Release
-        uses: softprops/action-gh-release@v2
-        with:
-          generate_release_notes: true
-          body_path: release_notes.md
-          fail_on_unmatched_files: true
-          files: rules_shellcheck-*.tar.gz
+      # id-token: write + attestations: write let the reusable
+      # workflow run actions/attest-build-provenance and attach a
+      # BCR-trusted SLSA attestation to the release.
+      id-token: write
+      attestations: write
+    uses: bazel-contrib/.github/.github/workflows/release_ruleset.yaml@v7.6.0
+    with:
+      release_files: rules_shellcheck-*.tar.gz
+      prerelease: false
+      tag_name: ${{ github.ref_name }}
 
   bcr-publish:
     needs: [release]
     uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.1.0
     permissions:
       contents: write
+      # Propagate id-token: write + attestations: write so the
+      # reusable publish workflow can read the release's attestation
+      # and re-attest the BCR entry files.
       id-token: write
       attestations: write
     with:
-      tag_name: ${{ needs.release.outputs.release_version }}
+      tag_name: ${{ github.ref_name }}
       registry_fork: aignas/bazel-central-registry
       author_name: aignas
       author_email: 240938+aignas@users.noreply.github.com
