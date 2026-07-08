@@ -4,11 +4,11 @@ filegroup(
     visibility = ["//shellcheck:__pkg__"],
 )
 
-filegroup(
+alias(
     name = "aspect_runner",
-    srcs = select({
-        "@platforms//os:windows": ["aspect_runner.bat"],
-        "//conditions:default": ["aspect_runner.sh"],
+    actual = select({
+        "@platforms//os:windows": "aspect_runner.bat",
+        "//conditions:default": "aspect_runner.sh",
     }),
     visibility = ["//visibility:public"],
 )
