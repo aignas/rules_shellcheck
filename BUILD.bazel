@@ -2,8 +2,6 @@ filegroup(
     name = "distribution",
     srcs = [
         "BUILD.bazel",
-        "def.bzl",
-        "deps.bzl",
         "CHANGELOG.md",
         "LICENSE",
         "MODULE.bazel",

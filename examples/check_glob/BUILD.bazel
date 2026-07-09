@@ -1,4 +1,4 @@
-load("@rules_shellcheck//:def.bzl", "shellcheck_test")
+load("@rules_shellcheck//shellcheck:shellcheck_test.bzl", "shellcheck_test")
 
 shellcheck_test(
     name = "shellcheck_all",
