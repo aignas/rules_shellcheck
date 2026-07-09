@@ -191,6 +191,8 @@ def _shellcheck_aspect_impl(target, ctx):
     tools = depset([toolchain.shellcheck], transitive = [toolchain.all_files])
 
     args = ctx.actions.args()
+    args.add(output)
+    args.add("--")
     args.add(toolchain.shellcheck)
     args.add(toolchain.shellcheckrc, format = "--rcfile=%s")
     args.add_all(src_info.source_paths, format_each = "--source-path=%s")
@@ -209,11 +211,11 @@ def _shellcheck_aspect_impl(target, ctx):
         executable = ctx.file._runner,
         inputs = depset(inputs_direct, transitive = inputs_transitive),
         arguments = [args],
-        env = ctx.configuration.default_shell_env | {
-            "SHELLCHECK_ASPECT_OUTPUT": output.path,
-        },
+        env = ctx.configuration.default_shell_env,
         tools = tools,
         outputs = [output],
+        execution_requirements = {"supports-path-mapping": ""},
+        toolchain = TOOLCHAIN_TYPE,
     )
 
     return [
