@@ -1,6 +1,18 @@
 filegroup(
     name = "distribution",
-    srcs = glob(["*"]),
+    srcs = glob(
+        ["*"],
+        exclude = ["aspect_runner.sh"],
+    ),
+    visibility = ["//shellcheck:__pkg__"],
+)
+
+# Split out so //internal/pkg can package these with mode 0755;
+# aspect_runner.sh is invoked as the executable of ctx.actions.run
+# and must be +x when consumed from the release tarball.
+filegroup(
+    name = "executable_distribution",
+    srcs = ["aspect_runner.sh"],
     visibility = ["//shellcheck:__pkg__"],
 )
 

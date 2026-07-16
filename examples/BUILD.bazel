@@ -8,7 +8,17 @@ filegroup(
         exclude = [
             "**/.gitignore",
             "**/MODULE.bazel.lock",
+            "optional_attributes/script.sh",
         ],
     ),
+    visibility = ["//:__pkg__"],
+)
+
+# See //shellcheck/internal:executable_distribution — packaged with
+# mode 0755 so extraction preserves the executable bit these
+# example scripts have in the source tree.
+filegroup(
+    name = "executable_distribution",
+    srcs = ["optional_attributes/script.sh"],
     visibility = ["//:__pkg__"],
 )
