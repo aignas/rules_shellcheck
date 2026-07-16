@@ -23,6 +23,15 @@ exec 3>&1 1>&2
 
 TAG="${1:?tag_name required}"
 
+# MODULE.bazel is checked in with a placeholder `version = "0.0.0"`.
+# Stamp the release tag in before packaging so the MODULE.bazel
+# inside the published archive matches the version BCR sees.
+sed -i -E "s/^([[:space:]]*version = )\"0\.0\.0\"/\1\"${TAG}\"/" MODULE.bazel
+if ! grep -qE "^[[:space:]]*version = \"${TAG}\"" MODULE.bazel; then
+    echo "ERROR: failed to stamp version ${TAG} into MODULE.bazel" >&2
+    exit 1
+fi
+
 # Reuse the existing //:release target — same tarball and rendered
 # notes that ci/package.sh produces for PR validation, minus the
 # example-validation loop (release_ruleset already runs bazel test).
