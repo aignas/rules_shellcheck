@@ -15,6 +15,12 @@ filegroup(
     visibility = ["//:__pkg__"],
 )
 
+filegroup(
+    name = "executable_distribution",
+    srcs = ["//shellcheck/internal:executable_distribution"],
+    visibility = ["//:__pkg__"],
+)
+
 toolchain_type(
     name = "toolchain_type",
     visibility = ["//visibility:public"],
