@@ -24,7 +24,7 @@ jobs:
       # BCR-trusted SLSA attestation to the release.
       id-token: write
       attestations: write
-    uses: bazel-contrib/.github/.github/workflows/release_ruleset.yaml@v7.6.0
+    uses: bazel-contrib/.github/.github/workflows/release_ruleset.yaml@v7.7.0
     with:
       release_files: rules_shellcheck-*.tar.gz
       prerelease: false
@@ -32,7 +32,7 @@ jobs:
 
   bcr-publish:
     needs: [release]
-    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.1.0
+    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.4.2
     permissions:
       contents: write
       # Propagate id-token: write + attestations: write so the
