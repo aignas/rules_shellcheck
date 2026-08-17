@@ -32,7 +32,7 @@ jobs:
 
   bcr-publish:
     needs: [release]
-    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.4.2
+    uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.5.0
     permissions:
       contents: write
       # Propagate id-token: write + attestations: write so the
