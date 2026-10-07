@@ -15,10 +15,12 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: macos-latest
           - os: ubuntu-latest
+          - os: windows-latest
 
     steps:
       - uses: actions/checkout@v7
@@ -29,7 +31,21 @@ jobs:
       - name: Test
         run: bazel test //...
 
+      # The examples double as integration tests of the rules as consumed
+      # from another module. They are run in place here so that every
+      # platform in the matrix covers them, including Windows where the
+      # release archive is not produced.
+      - name: Test example (check_glob)
+        run: bazel test //...
+        working-directory: examples/check_glob
+
+      - name: Test example (optional_attributes)
+        run: bazel test //...
+        working-directory: examples/optional_attributes
+
       - name: Create release archive and notes
+        # Packaging shells out to Unix tools; see //internal/pkg.
+        if: runner.os != 'Windows'
         # Set by GH actions, see
         # https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables
         run: ./ci/package.sh "${{ github.ref_name }}"

@@ -1,6 +1,7 @@
 """Provides shellcheck dependencies on all supported platforms:
-- Linux 64-bit and ARM64
-- OSX 64-bit
+- Linux x86_64, ARM64 and ARMv6
+- macOS x86_64 and ARM64
+- Windows x86_64
 """
 
 # buildifier: disable=bzl-visibility

@@ -12,6 +12,7 @@ This document is maintaining changes since the last released version (0.1.1)
 * Add a `targets` attribute to {obj}`shellcheck_test` for linting `rules_shell` targets and their transitive `deps`.
 * Add `//shellcheck/settings:check_generated` and a matching tri-state `check_generated` attribute on
   {obj}`shellcheck_test` for linting generated sources.
+* Add Windows support, using [rules_batch](https://github.com/periareon/rules_batch) to locate runfiles.
 
 ## v0.6.1
 
