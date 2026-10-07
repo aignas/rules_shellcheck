@@ -3,6 +3,13 @@ load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 load("//:def.bzl", "shellcheck_test")
 
+# Packaging shells out to Unix tools (`gzip`, `grep`, `sed`); dependents such
+# as :release and :release.shellcheck inherit the incompatibility.
+_NOT_WINDOWS = select({
+    "@platforms//os:windows": ["@platforms//:incompatible"],
+    "//conditions:default": [],
+})
+
 pkg_files(
     name = "files",
     srcs = [
@@ -30,6 +37,7 @@ pkg_tar(
         ":files",
     ],
     out = "rules_shellcheck.tar",
+    target_compatible_with = _NOT_WINDOWS,
 )
 
 genrule(
@@ -48,6 +56,7 @@ genrule(
         "sed \"s|{BUILD_EMBED_LABEL}|$$BUILD_EMBED_LABEL|g\" $< >$@",
     ]),
     stamp = 1,
+    target_compatible_with = _NOT_WINDOWS,
 )
 
 sh_binary(

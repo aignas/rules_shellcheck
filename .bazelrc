@@ -1,9 +1,41 @@
+###############################################################################
+## rules_shellcheck bazel configuration
+###############################################################################
+
+# Ensure errors are logged to the console
 test --test_output=errors
 
 # Fix the excessive rebuilding when using anything that depends on protobuf rules
 # See https://github.com/bazelbuild/buildtools/issues/744
 common --incompatible_strict_action_env
+
+# Use modern dependency resolution
 common --enable_bzlmod
+
+# Speed up builds by skipping the creation of runfile links
+build --nobuild_runfile_links
+
+# https://github.com/bazelbuild/bazel/issues/8195
+build --incompatible_disallow_empty_glob=true
+
+# https://github.com/bazelbuild/bazel/issues/12821
+build --nolegacy_external_runfiles
+
+# Disable network access in sandboxes by default.
+build --sandbox_default_allow_network=false
+
+# https://github.com/bazelbuild/bazel/issues/19981
+common --incompatible_auto_exec_groups
+
+# https://github.com/bazelbuild/bazel/issues/23043
+build --incompatible_autoload_externally=
+
+# https://github.com/bazelbuild/bazel/issues/12933
+build --incompatible_config_setting_private_default_visibility
+
+###############################################################################
+## Custom user flags
+###############################################################################
 
 try-import user.bazelrc
 
