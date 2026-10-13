@@ -12,19 +12,32 @@ Then `shellcheck` can be accessed by running:
 bazel run @rules_shellcheck//:shellcheck -- <parameters>
 ```
 
-And you can define a lint target:
+And you can define a lint target for your [rules_shell] targets:
 
 ```starlark
-load("@rules_shellcheck//:def.bzl", "shellcheck", "shellcheck_test")
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+load("@rules_shellcheck//shellcheck:shellcheck_test.bzl", "shellcheck_test")
+
+sh_binary(
+    name = "my_binary",
+    srcs = ["my_binary.sh"],
+    deps = ["//my/library"],
+)
 
 shellcheck_test(
     name = "shellcheck_test",
-    data = glob(["*.sh"]),
+    targets = [":my_binary"],
     tags = ["lint"],
     format = "gcc",
     severity = "warning",
 )
 ```
+
+`targets` accepts anything providing `ShInfo` or `ShBinaryInfo` (`sh_binary`, `sh_library`, …). Sources of those targets
+and of their transitive `deps` are linted, with each source directory passed as `--source-path` so `source` directives resolve.
+
+Generated sources are skipped by default. Set `check_generated` to `1` to lint them, `0` to never lint them, or leave it at
+`-1` to defer to the `//shellcheck/settings:check_generated` flag described below.
 
 ## Configuring the shellcheck aspect
 
@@ -50,6 +63,14 @@ build --@rules_shellcheck//shellcheck/settings:severity=warning
 - `//shellcheck/settings:severity` accepts `error`, `warning`, `info`, or `style` (default: `shellcheck`'s built-in default).
 
 Because these are standard `string_flag`s, you can also flip them per-command with `--config` groups or with [`transitions`][transitions] if you want a specific target to lint under different settings.
+
+### Generated files
+
+The aspect (and any `shellcheck_test` with `check_generated = -1`) only lints source files unless you flip the flag:
+
+```
+build --@rules_shellcheck//shellcheck/settings:check_generated
+```
 
 ### Skipping targets
 

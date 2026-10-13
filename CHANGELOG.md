@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This document is maintaining changes since the last released version (0.1.1)
 
+## Unreleased
+
+* Add a `targets` attribute to {obj}`shellcheck_test` for linting `rules_shell` targets and their transitive `deps`.
+* Add `//shellcheck/settings:check_generated` and a matching tri-state `check_generated` attribute on
+  {obj}`shellcheck_test` for linting generated sources.
+
 ## v0.6.1
 
 * Add `--external-sources` support to {obj}`shellcheck_aspect`.

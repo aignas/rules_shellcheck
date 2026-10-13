@@ -1,9 +1,15 @@
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 load("@rules_shellcheck//:def.bzl", "shellcheck_test")
+
+sh_binary(
+    name = "script",
+    srcs = ["script.sh"],
+)
 
 shellcheck_test(
     name = "shellcheck_all",
-    data = glob(["*.sh"]),
     format = "gcc",
     severity = "warning",
     tags = ["lint"],
+    targets = [":script"],
 )

@@ -1,4 +1,5 @@
 load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+load("@rules_shellcheck//:def.bzl", "shellcheck_test")
 
 sh_binary(
     name = "bin",
@@ -7,10 +8,7 @@ sh_binary(
     deps = ["//tests/follow_source/lib1"],
 )
 
-# TODO: https://github.com/aignas/rules_shellcheck/issues/53
-# shellcheck_test(
-#     name = "bin_test",
-#     data = [
-#         ":bin",
-#     ],
-# )
+shellcheck_test(
+    name = "bin_test",
+    targets = [":bin"],
+)

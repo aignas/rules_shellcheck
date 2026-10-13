@@ -1,7 +1,7 @@
 examples/check_glob/bazel-bin
 examples/check_glob/bazel-out
 examples/check_glob/bazel-testlogs
-examples/check_glob/bazel-optional_attributes
+examples/check_glob/bazel-check_glob
 
 examples/optional_attributes/bazel-bin
 examples/optional_attributes/bazel-out

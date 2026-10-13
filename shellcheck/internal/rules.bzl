@@ -14,11 +14,8 @@ set -eu
 {shellcheck} {args}
 """
 
-_BATCH_CONTENT = """\
-@ECHO OFF
-
-{shellcheck} {args}
-"""
+# Batch files must use CRLF line endings.
+_BATCH_CONTENT = "@ECHO OFF\r\n\r\n{shellcheck} {args}\r\n"
 
 def shellcheck_test_impl(ctx, expect_fail = False):
     """The implementation of the `shellcheck_test` rule.
@@ -46,15 +43,35 @@ def shellcheck_test_impl(ctx, expect_fail = False):
     if ctx.attr.severity:
         cmd.append("--severity={}".format(ctx.attr.severity))
 
+    check_generated = ctx.attr.check_generated == 1 or (
+        ctx.attr.check_generated == -1 and ctx.attr._check_generated[BuildSettingInfo].value
+    )
+    target_srcs = [
+        src
+        for src in depset(transitive = [
+            srcs
+            for target in ctx.attr.targets
+            for srcs in (target[ShellcheckSrcsInfo].srcs, target[ShellcheckSrcsInfo].transitive_srcs)
+        ]).to_list()
+        if src.is_source or check_generated
+    ]
+    files = ctx.files.data + target_srcs
+
+    # Linting runs from the runfiles tree, so `--source-path` is derived from
+    # `short_path` rather than the exec root paths in `ShellcheckSrcsInfo`.
+    source_paths = depset([src.short_path.rpartition("/")[0] or "." for src in target_srcs]).to_list()
+
     shellcheck_path = toolchain.shellcheck.short_path
     shellcheck_rc = toolchain.shellcheckrc.short_path
-    srcs = [f.short_path for f in ctx.files.data]
+    srcs = [f.short_path for f in files]
     if is_windows:
         shellcheck_path.replace("/", "\\")
         shellcheck_rc.replace("/", "\\")
         srcs = [src.replace("/", "\\") for src in srcs]
+        source_paths = [path.replace("/", "\\") for path in source_paths]
 
     cmd.append("--rcfile={}".format(shellcheck_rc))
+    cmd.extend(["--source-path={}".format(path) for path in source_paths])
     cmd.extend(srcs)
 
     if expect_fail:
@@ -73,35 +90,11 @@ def shellcheck_test_impl(ctx, expect_fail = False):
         DefaultInfo(
             executable = executable,
             runfiles = ctx.runfiles(
-                files = [toolchain.shellcheck, toolchain.shellcheckrc] + ctx.files.data,
+                files = [toolchain.shellcheck, toolchain.shellcheckrc] + files,
                 transitive_files = toolchain.all_files,
             ),
         ),
     ]
-
-ATTRS = {
-    "data": attr.label_list(
-        allow_files = True,
-    ),
-    "format": attr.string(
-        values = ["checkstyle", "diff", "gcc", "json", "json1", "quiet", "tty"],
-        doc = "The format of the outputted lint results.",
-    ),
-    "severity": attr.string(
-        values = ["error", "info", "style", "warning"],
-        doc = "The severity of the lint results.",
-    ),
-    "_windows_constraint": attr.label(
-        default = Label("@platforms//os:windows"),
-    ),
-}
-
-shellcheck_test = rule(
-    implementation = shellcheck_test_impl,
-    attrs = ATTRS,
-    test = True,
-    toolchains = [TOOLCHAIN_TYPE],
-)
 
 ShellcheckSrcsInfo = provider(
     doc = "A provider containing relevant data for linting.",
@@ -144,6 +137,46 @@ _shellcheck_srcs_aspect = aspect(
     implementation = _shellcheck_srcs_aspect_impl,
 )
 
+ATTRS = {
+    "check_generated": attr.int(
+        doc = (
+            "Whether to lint generated files collected from `targets`: `0` never, " +
+            "`1` always, `-1` defer to `//shellcheck/settings:check_generated`."
+        ),
+        default = -1,
+        values = [-1, 0, 1],
+    ),
+    "data": attr.label_list(
+        allow_files = True,
+    ),
+    "format": attr.string(
+        values = ["checkstyle", "diff", "gcc", "json", "json1", "quiet", "tty"],
+        doc = "The format of the outputted lint results.",
+    ),
+    "severity": attr.string(
+        values = ["error", "info", "style", "warning"],
+        doc = "The severity of the lint results.",
+    ),
+    "targets": attr.label_list(
+        doc = "`rules_shell` targets whose sources, and those of their transitive `deps`, are linted.",
+        providers = [[ShInfo], [ShBinaryInfo]],
+        aspects = [_shellcheck_srcs_aspect],
+    ),
+    "_check_generated": attr.label(
+        default = Label("//shellcheck/settings:check_generated"),
+    ),
+    "_windows_constraint": attr.label(
+        default = Label("@platforms//os:windows"),
+    ),
+}
+
+shellcheck_test = rule(
+    implementation = shellcheck_test_impl,
+    attrs = ATTRS,
+    test = True,
+    toolchains = [TOOLCHAIN_TYPE],
+)
+
 def _shellcheck_aspect_impl(target, ctx):
     if target.label.workspace_root.startswith("external"):
         return []
@@ -163,10 +196,11 @@ def _shellcheck_aspect_impl(target, ctx):
 
     src_info = target[ShellcheckSrcsInfo]
 
+    check_generated = ctx.attr._check_generated[BuildSettingInfo].value
     srcs = [
         src
         for src in src_info.srcs.to_list()
-        if src.is_source
+        if src.is_source or check_generated
     ]
 
     if not srcs:
@@ -184,7 +218,7 @@ def _shellcheck_aspect_impl(target, ctx):
         ])
 
     format = ctx.attr._format[BuildSettingInfo].value
-    severity = ctx.attr._format[BuildSettingInfo].value
+    severity = ctx.attr._severity[BuildSettingInfo].value
 
     output = ctx.actions.declare_file("{}.shellcheck.ok".format(target.label.name))
 
@@ -228,6 +262,9 @@ shellcheck_aspect = aspect(
     doc = "An aspect for performing shellcheck checks on `rules_shell` rules.",
     implementation = _shellcheck_aspect_impl,
     attrs = {
+        "_check_generated": attr.label(
+            default = Label("//shellcheck/settings:check_generated"),
+        ),
         "_format": attr.label(
             default = Label("//shellcheck/settings:format"),
         ),

@@ -1,9 +1,15 @@
-load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
 
 filegroup(
     name = "distribution",
     srcs = glob(["*"]),
     visibility = ["//shellcheck:__pkg__"],
+)
+
+bool_flag(
+    name = "check_generated",
+    build_setting_default = False,
+    visibility = ["//visibility:public"],
 )
 
 string_flag(

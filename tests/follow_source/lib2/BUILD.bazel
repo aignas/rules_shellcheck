@@ -1,4 +1,5 @@
 load("@rules_shell//shell:sh_library.bzl", "sh_library")
+load("@rules_shellcheck//:def.bzl", "shellcheck_test")
 
 sh_library(
     name = "lib2",
@@ -6,10 +7,7 @@ sh_library(
     visibility = ["//tests/follow_source:__subpackages__"],
 )
 
-# TODO: https://github.com/aignas/rules_shellcheck/issues/53
-# shellcheck_test(
-#     name = "lib2_test",
-#     data = [
-#         ":lib2",
-#     ],
-# )
+shellcheck_test(
+    name = "lib2_test",
+    targets = [":lib2"],
+)

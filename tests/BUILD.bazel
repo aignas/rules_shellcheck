@@ -1,4 +1,6 @@
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+load("@rules_shell//shell:sh_library.bzl", "sh_library")
 load(":test.bzl", shellcheck_test = "shellcheck_internal_test")
 
 shellcheck_test(
@@ -25,4 +27,66 @@ sh_binary(
 sh_binary(
     name = "good",
     srcs = ["testdata/good.sh"],
+)
+
+shellcheck_test(
+    name = "targets_test",
+    targets = [":good"],
+)
+
+shellcheck_test(
+    name = "targets_fail_test",
+    expect_fail = True,
+    targets = [":bad"],
+)
+
+copy_file(
+    name = "generated_bad_sh",
+    src = "testdata/bad.sh",
+    out = "generated_bad.sh",
+)
+
+sh_library(
+    name = "generated_bad",
+    srcs = ["generated_bad.sh"],
+    # The generated source is intentionally unclean. The aspect skips it by
+    # default but would lint it under `--//shellcheck/settings:check_generated`.
+    tags = ["no_shellcheck"],
+)
+
+# `check_generated = 0` never lints the generated source, so the accompanying
+# clean file is all shellcheck sees.
+shellcheck_test(
+    name = "generated_excluded_test",
+    check_generated = 0,
+    data = ["testdata/good.sh"],
+    targets = [":generated_bad"],
+)
+
+shellcheck_test(
+    name = "generated_included_test",
+    check_generated = 1,
+    expect_fail = True,
+    targets = [":generated_bad"],
+)
+
+copy_file(
+    name = "generated_good_sh",
+    src = "testdata/good.sh",
+    out = "generated_good.sh",
+)
+
+# Linted by the aspect only under `--//shellcheck/settings:check_generated`.
+sh_library(
+    name = "generated_good",
+    srcs = ["generated_good.sh"],
+)
+
+# `check_generated` defaults to -1, deferring to
+# `--//shellcheck/settings:check_generated`. The generated source is clean so
+# this passes either way; the flag only changes whether it is linted at all.
+shellcheck_test(
+    name = "generated_global_test",
+    data = ["testdata/good.sh"],
+    targets = [":generated_good"],
 )
