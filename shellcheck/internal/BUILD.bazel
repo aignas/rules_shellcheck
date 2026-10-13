@@ -1,18 +1,22 @@
+_EXECUTABLES = [
+    "aspect_runner.sh",
+    "test_runner.sh",
+]
+
 filegroup(
     name = "distribution",
     srcs = glob(
         ["*"],
-        exclude = ["aspect_runner.sh"],
+        exclude = _EXECUTABLES,
     ),
     visibility = ["//shellcheck:__pkg__"],
 )
 
-# Split out so //internal/pkg can package these with mode 0755;
-# aspect_runner.sh is invoked as the executable of ctx.actions.run
-# and must be +x when consumed from the release tarball.
+# Split out so //internal/pkg can package these with mode 0755; they are
+# invoked as executables and must be +x when consumed from the release tarball.
 filegroup(
     name = "executable_distribution",
-    srcs = ["aspect_runner.sh"],
+    srcs = _EXECUTABLES,
     visibility = ["//shellcheck:__pkg__"],
 )
 
@@ -21,6 +25,24 @@ alias(
     actual = select({
         "@platforms//os:windows": "aspect_runner.bat",
         "//conditions:default": "aspect_runner.sh",
+    }),
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "test_runner",
+    actual = select({
+        "@platforms//os:windows": "test_runner.bat",
+        "//conditions:default": "test_runner.sh",
+    }),
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "runfiles_lib",
+    actual = select({
+        "@platforms//os:windows": "@rules_batch//batch/runfiles",
+        "//conditions:default": "@rules_shell//shell/runfiles",
     }),
     visibility = ["//visibility:public"],
 )

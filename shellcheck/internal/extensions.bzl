@@ -184,9 +184,11 @@ def shellcheck_dependencies():
         toolchains = toolchains,
     )
 
-def _impl(_):
+def _shellcheck_impl(module_ctx):
     shellcheck_dependencies()
 
+    return module_ctx.extension_metadata(reproducible = True)
+
 shellcheck = module_extension(
-    implementation = _impl,
+    implementation = _shellcheck_impl,
 )

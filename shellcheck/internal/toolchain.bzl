@@ -2,7 +2,16 @@
 
 TOOLCHAIN_TYPE = str(Label("//shellcheck:toolchain_type"))
 
-def _rlocationpath(file, workspace_name):
+def rlocationpath(file, workspace_name):
+    """Compute the runfiles path of a file, e.g. for runfiles library lookups.
+
+    Args:
+        file (File): The file to compute the path for.
+        workspace_name (str): The name of the main workspace (`ctx.workspace_name`).
+
+    Returns:
+        str: The rlocation path.
+    """
     if file.short_path.startswith("../"):
         return file.short_path[len("../"):]
 
@@ -18,7 +27,7 @@ def _shellcheck_toolchain_impl(ctx):
 
     make_variable_info = platform_common.TemplateVariableInfo({
         "SHELLCHECK": ctx.file.shellcheck.path,
-        "SHELLCHECK_RLOCATIONPATH": _rlocationpath(ctx.file.shellcheck, ctx.workspace_name),
+        "SHELLCHECK_RLOCATIONPATH": rlocationpath(ctx.file.shellcheck, ctx.workspace_name),
     })
 
     return [

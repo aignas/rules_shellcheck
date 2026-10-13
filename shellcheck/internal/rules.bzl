@@ -4,18 +4,7 @@
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_shell//shell:sh_binary_info.bzl", "ShBinaryInfo")
 load("@rules_shell//shell:sh_info.bzl", "ShInfo")
-load(":toolchain.bzl", "TOOLCHAIN_TYPE")
-
-_SHELL_CONTENT = """\
-#!/bin/sh
-
-set -eu
-
-{shellcheck} {args}
-"""
-
-# Batch files must use CRLF line endings.
-_BATCH_CONTENT = "@ECHO OFF\r\n\r\n{shellcheck} {args}\r\n"
+load(":toolchain.bzl", "TOOLCHAIN_TYPE", "rlocationpath")
 
 def shellcheck_test_impl(ctx, expect_fail = False):
     """The implementation of the `shellcheck_test` rule.
@@ -27,21 +16,20 @@ def shellcheck_test_impl(ctx, expect_fail = False):
     Returns:
         list: All providers.
     """
-    is_windows = ctx.target_platform_has_constraint(
-        ctx.attr._windows_constraint[platform_common.ConstraintValueInfo],
+    toolchain = ctx.toolchains[TOOLCHAIN_TYPE]
+    runner = ctx.file._runner
+    executable = ctx.actions.declare_file("{}.{}".format(ctx.label.name, runner.extension))
+    ctx.actions.symlink(
+        output = executable,
+        target_file = runner,
+        is_executable = True,
     )
 
-    toolchain = ctx.toolchains[TOOLCHAIN_TYPE]
-    executable = ctx.actions.declare_file("{}{}".format(
-        ctx.label.name,
-        ".bat" if is_windows else ".sh",
-    ))
-
-    cmd = []
+    opts = []
     if ctx.attr.format:
-        cmd.append("--format={}".format(ctx.attr.format))
+        opts.append("--format={}".format(ctx.attr.format))
     if ctx.attr.severity:
-        cmd.append("--severity={}".format(ctx.attr.severity))
+        opts.append("--severity={}".format(ctx.attr.severity))
 
     check_generated = ctx.attr.check_generated == 1 or (
         ctx.attr.check_generated == -1 and ctx.attr._check_generated[BuildSettingInfo].value
@@ -57,43 +45,31 @@ def shellcheck_test_impl(ctx, expect_fail = False):
     ]
     files = ctx.files.data + target_srcs
 
-    # Linting runs from the runfiles tree, so `--source-path` is derived from
-    # `short_path` rather than the exec root paths in `ShellcheckSrcsInfo`.
-    source_paths = depset([src.short_path.rpartition("/")[0] or "." for src in target_srcs]).to_list()
+    # The runner derives `--source-path` from one file per directory, since
+    # directories themselves are not listed in the runfiles manifest.
+    source_files = {src.short_path.rpartition("/")[0]: src for src in target_srcs}.values()
 
-    shellcheck_path = toolchain.shellcheck.short_path
-    shellcheck_rc = toolchain.shellcheckrc.short_path
-    srcs = [f.short_path for f in files]
-    if is_windows:
-        shellcheck_path.replace("/", "\\")
-        shellcheck_rc.replace("/", "\\")
-        srcs = [src.replace("/", "\\") for src in srcs]
-        source_paths = [path.replace("/", "\\") for path in source_paths]
+    workspace_name = ctx.workspace_name
+    env = {
+        "SHELLCHECK_TEST_BIN": rlocationpath(toolchain.shellcheck, workspace_name),
+        "SHELLCHECK_TEST_EXPECT_FAIL": "1" if expect_fail else "0",
+        "SHELLCHECK_TEST_FILES": " ".join([rlocationpath(f, workspace_name) for f in files]),
+        "SHELLCHECK_TEST_OPTS": " ".join(opts),
+        "SHELLCHECK_TEST_RCFILE": rlocationpath(toolchain.shellcheckrc, workspace_name),
+        "SHELLCHECK_TEST_SOURCE_FILES": " ".join([rlocationpath(f, workspace_name) for f in source_files]),
+    }
 
-    cmd.append("--rcfile={}".format(shellcheck_rc))
-    cmd.extend(["--source-path={}".format(path) for path in source_paths])
-    cmd.extend(srcs)
-
-    if expect_fail:
-        cmd.append("|| exit 0; exit 1")
-
-    ctx.actions.write(
-        output = executable,
-        content = (_BATCH_CONTENT if is_windows else _SHELL_CONTENT).format(
-            shellcheck = shellcheck_path,
-            args = " ".join(cmd),
-        ),
-        is_executable = True,
+    runfiles = ctx.runfiles(
+        files = [toolchain.shellcheck, toolchain.shellcheckrc] + files,
+        transitive_files = toolchain.all_files,
     )
 
     return [
         DefaultInfo(
             executable = executable,
-            runfiles = ctx.runfiles(
-                files = [toolchain.shellcheck, toolchain.shellcheckrc] + files,
-                transitive_files = toolchain.all_files,
-            ),
+            runfiles = runfiles.merge(ctx.attr._runfiles_lib[DefaultInfo].default_runfiles),
         ),
+        RunEnvironmentInfo(environment = env),
     ]
 
 ShellcheckSrcsInfo = provider(
@@ -165,8 +141,13 @@ ATTRS = {
     "_check_generated": attr.label(
         default = Label("//shellcheck/settings:check_generated"),
     ),
-    "_windows_constraint": attr.label(
-        default = Label("@platforms//os:windows"),
+    "_runfiles_lib": attr.label(
+        doc = "The runfiles library sourced by `_runner`.",
+        default = Label("//shellcheck/internal:runfiles_lib"),
+    ),
+    "_runner": attr.label(
+        default = Label("//shellcheck/internal:test_runner"),
+        allow_single_file = True,
     ),
 }
 
