@@ -1,0 +1,8 @@
+# cmd.exe resolves labels unreliably in batch files with LF line endings, so
+# batch files are always checked out as CRLF. Shell scripts and shellcheck
+# configuration must stay LF, otherwise shellcheck reports the carriage
+# returns (and the scripts fail to run) when checked out on Windows.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.sh text eol=lf
+.shellcheckrc text eol=lf
